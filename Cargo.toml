@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = [
+    "day-01",
+]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Alex Hudspith"]
+edition = "2021"
