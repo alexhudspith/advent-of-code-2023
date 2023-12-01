@@ -11,14 +11,14 @@ use std::io::prelude::*;
 
 use day_01::*;
 
-pub fn find_digits(line: &str) -> Result<(&str, &str), io::Error> {
-    let pos = line.find(|c: char| c.is_ascii_digit()).ok_or_else(io_invalid)?;
+pub fn find_digits(line: &str) -> Option<(&str, &str)> {
+    let pos = line.find(|c: char| c.is_ascii_digit())?;
     let first = &line[pos..pos + 1];
 
-    let pos = line.rfind(|c: char| c.is_ascii_digit()).ok_or_else(io_invalid)?;
+    let pos = line.rfind(|c: char| c.is_ascii_digit())?;
     let last = &line[pos..pos + 1];
 
-    Ok((first, last))
+    Some((first, last))
 }
 
 fn run<R: Read>(input: R) -> io::Result<u64> {
@@ -26,7 +26,7 @@ fn run<R: Read>(input: R) -> io::Result<u64> {
     let mut total = 0;
     for line in lines {
         let line = line?;
-        let (first, last) = find_digits(&line)?;
+        let (first, last) = find_digits(&line).ok_or_else(io_invalid)?;
         let number = format!("{first}{last}");
         let result: u64 = number.parse().map_err(io_invalid_with)?;
         total += result;

@@ -10,7 +10,7 @@ use std::io;
 use std::io::prelude::*;
 use std::io::{BufReader, Cursor};
 use regex::Regex;
-use day_01::data_dir;
+use day_01::{data_dir, io_invalid};
 
 const DIGITS: [&str; 9] = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
@@ -18,19 +18,19 @@ fn rev(s: &str) -> String {
     s.chars().rev().collect()
 }
 
-struct Searcher {
+struct NumberSearch {
     regex: Regex,
     digit_map: HashMap<String, u64>,
 }
 
-impl Searcher {
-    fn find_number_in(&self, s: &str) -> u64 {
-        let m = self.regex.find(s).unwrap();
-        self.digit_map[m.as_str()]
+impl NumberSearch {
+    fn find(&self, s: &str) -> Option<u64> {
+        let m = self.regex.find(s)?;
+        self.digit_map.get(m.as_str()).copied()
     }
 }
 
-impl Searcher {
+impl NumberSearch {
     pub fn new(digits: &[String]) -> Self {
         let mut digit_map: HashMap<String, u64> = digits.iter()
             .enumerate()
@@ -49,30 +49,30 @@ impl Searcher {
     }
 }
 
-pub struct BiSearcher {
-    forward: Searcher,
-    reverse: Searcher,
+pub struct BidiNumberSearch {
+    forward: NumberSearch,
+    reverse: NumberSearch,
 }
 
-impl BiSearcher {
+impl BidiNumberSearch {
     pub fn new() -> Self {
         let digits: Vec<_> = DIGITS.iter().map(|&s| s.to_string()).collect();
         let digits_rev: Vec<_> = DIGITS.iter().map(|&s| rev(s)).collect();
         Self {
-            forward: Searcher::new(&digits),
-            reverse: Searcher::new(&digits_rev),
+            forward: NumberSearch::new(&digits),
+            reverse: NumberSearch::new(&digits_rev),
         }
     }
 
-    pub fn find_numbers(&self, line: &str) -> Result<(u64, u64), io::Error> {
-        let first = self.forward.find_number_in(line);
-        let last = self.reverse.find_number_in(&rev(line));
+    pub fn find(&self, line: &str) -> Option<(u64, u64)> {
+        let first = self.forward.find(line)?;
+        let last = self.reverse.find(&rev(line))?;
 
-        Ok((first, last))
+        Some((first, last))
     }
 }
 
-impl Default for BiSearcher {
+impl Default for BidiNumberSearch {
     fn default() -> Self {
         Self::new()
     }
@@ -80,11 +80,11 @@ impl Default for BiSearcher {
 
 fn run<R: Read>(input: R) -> io::Result<u64> {
     let lines = BufReader::new(input).lines();
-    let searcher = BiSearcher::new();
+    let searcher = BidiNumberSearch::new();
     let mut total = 0;
     for line in lines {
         let line = line?;
-        let (first, last) = searcher.find_numbers(&line)?;
+        let (first, last) = searcher.find(&line).ok_or_else(io_invalid)?;
         total += first * 10 + last;
     }
 
