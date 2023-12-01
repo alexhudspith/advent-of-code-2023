@@ -3,7 +3,7 @@
 // Answer: 54265
 
 use std::collections::HashMap;
-use regex::Regex;
+use regex::{Match, Regex};
 use crate::UInt;
 
 const DIGITS: [(&str, UInt); 18] = [
@@ -27,58 +27,25 @@ const DIGITS: [(&str, UInt); 18] = [
     ("9", 9),
 ];
 
-const DIGITS_REV: [(&str, UInt); 18] = [
-    ("eno", 1),
-    ("owt", 2),
-    ("eerht", 3),
-    ("ruof", 4),
-    ("evif", 5),
-    ("xis", 6),
-    ("neves", 7),
-    ("thgie", 8),
-    ("enin", 9),
-    ("1", 1),
-    ("2", 2),
-    ("3", 3),
-    ("4", 4),
-    ("5", 5),
-    ("6", 6),
-    ("7", 7),
-    ("8", 8),
-    ("9", 9),
-];
-
-fn rev(s: &str) -> String {
-    s.chars().rev().collect()
+fn digit(digit_words: &HashMap<&str, UInt>, m: &Match) -> Option<UInt> {
+    digit_words.get(m.as_str()).copied()
 }
 
-struct NumberSearch<'d> {
-    digit_words: HashMap<&'d str, UInt>,
-    regex: Regex,
-}
-
-impl<'d> NumberSearch<'d> {
-    pub fn new(digit_words: HashMap<&'d str, UInt>) -> Self {
-        let pattern = digit_words.keys().copied().collect::<Vec<_>>().join("|");
-        Self {
-            digit_words,
-            regex: Regex::new(&pattern).unwrap(),
-        }
-    }
-
-    fn find(&self, s: &str) -> Option<UInt> {
-        let m = self.regex.find(s)?;
-        self.digit_words.get(m.as_str()).copied()
-    }
-}
-
-pub(crate) fn find_digits_fn() -> impl FnMut(&str) -> Option<(UInt, UInt)> {
-    let forward = NumberSearch::new(DIGITS.into_iter().collect());
-    let reverse = NumberSearch::new(DIGITS_REV.into_iter().collect());
+pub fn find_digits_fn() -> impl FnMut(&str) -> Option<(UInt, UInt)> {
+    let digit_words: HashMap<_, _> = DIGITS.into_iter().collect();
+    let digits_alt = digit_words.keys().copied().collect::<Vec<_>>().join("|");
+    let pattern_first = format!(r#"({digits_alt})"#);
+    let pattern_last = format!(r#"(?:.*)({digits_alt})"#);
+    let regex_first = Regex::new(&pattern_first).unwrap();
+    let regex_last = Regex::new(&pattern_last).unwrap();
 
     move |line: &str| {
-        let first = forward.find(line)?;
-        let last = reverse.find(&rev(line)).expect("Already found first");
+        let first_match = regex_first.captures(line)?.get(1)?;
+        let first = digit(&digit_words, &first_match)?;
+        let last = regex_last.captures_at(line, first_match.end())
+            .and_then(|captures| captures.get(1))
+            .and_then(|last_match| digit(&digit_words, &last_match))
+            .unwrap_or(first);
         Some((first, last))
     }
 }
