@@ -17,7 +17,7 @@ fn run<R, F>(input: R, mut game_score: F) -> io::Result<u64>
     for line in lines {
         let line = line?;
         let game: Game = line.parse()
-            .map_err(|_| io::Error::from(io::ErrorKind::InvalidData))?;
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         total += game_score(&game);
     }
 

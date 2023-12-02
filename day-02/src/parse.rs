@@ -18,19 +18,19 @@ fn nom_parse_error<I>(input: I, kind: ErrorKind) -> NomError<I> {
     nom::Err::Error(inner)
 }
 
-fn rgb(i: &str) -> IResult<&str, &str> {
-    alt((tag("red"), tag("green"), tag("blue")))(i)
+fn rgb(input: &str) -> IResult<&str, &str> {
+    alt((tag("red"), tag("green"), tag("blue")))(input)
 }
 
-fn colour_count(i: &str) -> IResult<&str, (u8, &str)> {
-    separated_pair(nom_u8, space1, rgb)(i)
+fn colour_count(input: &str) -> IResult<&str, (u8, &str)> {
+    separated_pair(nom_u8, space1, rgb)(input)
 }
 
-fn cubes(i: &str) -> IResult<&str, Cubes> {
-    let (i, colour_counts) = separated_list1(
-        tuple((char(','), space0)),
+fn cubes(input: &str) -> IResult<&str, Cubes> {
+    let (input, colour_counts) = separated_list1(
+        tuple((space0, char(','), space0)),
         colour_count
-    )(i)?;
+    )(input)?;
 
     let (mut r, mut g, mut b) = (None, None, None);
     for (count, rgb) in colour_counts {
@@ -42,26 +42,26 @@ fn cubes(i: &str) -> IResult<&str, Cubes> {
         };
 
         if field.is_some() {
-            return Err(nom_parse_error(i, ErrorKind::Verify));
+            return Err(nom_parse_error(input, ErrorKind::Verify));
         }
 
         *field = Some(count);
     }
 
     let cubes = Cubes::rgb(r.unwrap_or(0), g.unwrap_or(0), b.unwrap_or(0));
-    Ok((i, cubes))
+    Ok((input, cubes))
 }
 
-fn game_id(i: &str) -> IResult<&str, u64> {
+fn game_id(input: &str) -> IResult<&str, u64> {
     delimited(
         tuple((tag("Game"), space1)),
         nom_u64,
         tuple((space0, char(':')))
-    )(i)
+    )(input)
 }
 
-pub fn game(i: &str) -> IResult<&str, Game> {
-    let mut parser = all_consuming(
+pub fn game(input: &str) -> IResult<&str, Game> {
+    let (input, (id, cubes)) = all_consuming(
         separated_pair(
             game_id,
             space0,
@@ -70,9 +70,9 @@ pub fn game(i: &str) -> IResult<&str, Game> {
                 cubes
             )
         )
-    );
+    )(input)?;
 
-    parser(i).map(|(i, (id, cubes))| (i, Game::new(id, cubes)))
+    Ok((input, Game::new(id, cubes)))
 }
 
 #[cfg(test)]
@@ -82,14 +82,14 @@ mod tests {
     #[test]
     fn parse_game() {
         let s = "Game 92: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green";
-        let (i, g) = game(s).unwrap();
+        let (input, g) = game(s).unwrap();
         let draws = vec![
             Cubes::rgb(4, 0, 3),
             Cubes::rgb(1, 2, 6),
             Cubes::rgb(0, 2, 0),
         ];
 
-        assert_eq!(i, "");
+        assert_eq!(input, "");
         assert_eq!(g, Game::new(92, draws));
     }
 
