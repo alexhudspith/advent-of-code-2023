@@ -2,9 +2,11 @@ pub(crate) mod parse;
 
 use std::cmp::max;
 use std::str::FromStr;
-use crate::parse::NomError;
+use derive_builder::Builder;
+use nom::Finish;
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Builder)]
+#[builder(default)]
 pub struct Cubes {
     pub red: u8,
     pub green: u8,
@@ -55,12 +57,16 @@ impl Game {
 }
 
 impl FromStr for Game {
-    type Err = NomError<String>;
+    type Err = nom::error::Error<String>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse::game(s) {
+        let result = parse::game(s)
+            .map_err(|e| e.to_owned())
+            .finish();
+
+        match result {
             Ok((_input, game)) => Ok(game),
-            Err(e) => Err(e.to_owned()),
+            Err(e) => Err(e),
         }
     }
 }
