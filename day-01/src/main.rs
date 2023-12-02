@@ -44,26 +44,31 @@ fn main() -> io::Result<()> {
 mod tests {
     use super::*;
     use std::io::Cursor;
+    use indoc::indoc;
 
     #[test]
-    fn part1() {
-        let input = Cursor::new("1abc2
-pqr3stu8vwx
-a1b2c3d4e5f
-treb7uchet");
+    fn part1_example() {
+        let input = Cursor::new(indoc!("
+            1abc2
+            pqr3stu8vwx
+            a1b2c3d4e5f
+            treb7uchet
+        "));
         let actual = run(input, part1::find_digits_fn()).unwrap();
         assert_eq!(actual, 142);
     }
 
     #[test]
-    fn part2() {
-        let input = Cursor::new("two1nine
-eightwothree
-abcone2threexyz
-xtwone3four
-4nineeightseven2
-zoneight234
-7pqrstsixteen");
+    fn part2_example() {
+        let input = Cursor::new(indoc!("
+            two1nine
+            eightwothree
+            abcone2threexyz
+            xtwone3four
+            4nineeightseven2
+            zoneight234
+            7pqrstsixteen
+        "));
         let actual = run(input, part2::find_digits_fn()).unwrap();
         assert_eq!(actual, 281);
     }

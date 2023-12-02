@@ -8,3 +8,6 @@ edition.workspace = true
 
 [dependencies]
 regex = { workspace = true }
+
+[dev-dependencies]
+indoc = { workspace = true }
