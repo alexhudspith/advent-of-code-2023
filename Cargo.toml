@@ -9,6 +9,7 @@ members = [
 version = "0.1.0"
 authors = ["Alex Hudspith"]
 edition = "2021"
+repository = "https://github.com/alexhudspith/advent-of-code-2023"
 
 [workspace.dependencies]
 regex = "1.10.2"
