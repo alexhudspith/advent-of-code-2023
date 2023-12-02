@@ -1,12 +1,11 @@
-use std::str::FromStr;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{char, digit1, space0, space1};
+use nom::character::complete::{char, space0, space1, u8 as nom_u8, u64 as nom_u64};
 use nom::combinator::all_consuming;
 use nom::error::ErrorKind;
 use nom::IResult;
 use nom::multi::separated_list1;
-use nom::sequence::tuple;
+use nom::sequence::{delimited, separated_pair, tuple};
 
 use crate::{Cubes, Game};
 
@@ -14,41 +13,27 @@ use crate::{Cubes, Game};
 pub type NomError<I> = nom::Err<nom::error::Error<I>>;
 
 /// Returns a `std::error::Error` (impl) for a parsing error
-#[inline(always)]
 fn nom_parse_error<I>(input: I, kind: ErrorKind) -> NomError<I> {
     let inner: nom::error::Error<I> = nom::error::make_error(input, kind);
     nom::Err::Error(inner)
-}
-
-fn unsigned<N: FromStr>(i: &str) -> IResult<&str, N> {
-    match digit1(i) {
-        Ok((i, d)) => {
-            let n = d.parse()
-                .map_err(|e| nom_parse_error(i, ErrorKind::Digit))?;
-            Ok((i, n))
-        },
-        Err(e) => Err(e),
-    }
 }
 
 fn rgb(i: &str) -> IResult<&str, &str> {
     alt((tag("red"), tag("green"), tag("blue")))(i)
 }
 
-fn colour_count(i: &str) -> IResult<&str, (&str, u8)> {
-    let mut parser = tuple((unsigned, space1, rgb));
-    parser(i).map(|(i, (count, _, colour))| (i, (colour, count)))
+fn colour_count(i: &str) -> IResult<&str, (u8, &str)> {
+    separated_pair(nom_u8, space1, rgb)(i)
 }
 
 fn cubes(i: &str) -> IResult<&str, Cubes> {
-    let mut parser = separated_list1(
+    let (i, colour_counts) = separated_list1(
         tuple((char(','), space0)),
         colour_count
-    );
+    )(i)?;
 
-    let (i, colours) = parser(i)?;
     let (mut r, mut g, mut b) = (None, None, None);
-    for (rgb, count) in colours {
+    for (count, rgb) in colour_counts {
         let field = match rgb {
             "red" => &mut r,
             "green" => &mut g,
@@ -68,19 +53,26 @@ fn cubes(i: &str) -> IResult<&str, Cubes> {
 }
 
 fn game_id(i: &str) -> IResult<&str, u64> {
-    let mut parser = tuple((
-        tag("Game"), space1, unsigned, space0, char(':')
-    ));
-
-    parser(i).map(|(i, (_, _, id, _, _))| (i, id))
+    delimited(
+        tuple((tag("Game"), space1)),
+        nom_u64,
+        tuple((space0, char(':')))
+    )(i)
 }
 
 pub fn game(i: &str) -> IResult<&str, Game> {
-    let mut parser = all_consuming(tuple((
-        game_id, space0, separated_list1(tuple((char(';'), space0)), cubes)
-    )));
+    let mut parser = all_consuming(
+        separated_pair(
+            game_id,
+            space0,
+            separated_list1(
+                tuple((char(';'), space0)),
+                cubes
+            )
+        )
+    );
 
-    parser(i).map(|(i, (id, _, cubes))| (i, Game::new(id, cubes)))
+    parser(i).map(|(i, (id, cubes))| (i, Game::new(id, cubes)))
 }
 
 #[cfg(test)]
@@ -121,6 +113,6 @@ mod tests {
 
     #[test]
     fn parse_colour() {
-        assert_eq!(colour_count("4 blue").unwrap(), ("", ("blue", 4)));
+        assert_eq!(colour_count("4 blue").unwrap(), ("", (4, "blue")));
     }
 }
