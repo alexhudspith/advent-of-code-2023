@@ -2,9 +2,14 @@
 resolver = "2"
 members = [
     "day-01",
+    "day-02",
 ]
 
 [workspace.package]
 version = "0.1.0"
 authors = ["Alex Hudspith"]
 edition = "2021"
+
+[workspace.dependencies]
+regex = "1.10.2"
+nom = "7.1.3"
