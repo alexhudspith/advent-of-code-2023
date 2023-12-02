@@ -8,6 +8,7 @@ edition.workspace = true
 
 [dependencies]
 nom = { workspace = true }
+derive_builder = { workspace = true }
 
 [dev-dependencies]
 indoc = { workspace = true }
