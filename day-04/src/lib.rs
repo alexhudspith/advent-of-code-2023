@@ -37,8 +37,7 @@ impl Game {
 
 pub struct Card {
     pub win_count: u32,
-    pub copies_kept: u32,
-    pub copies_left: u32,
+    pub copies: u32,
 }
 
 impl FromStr for Card {
@@ -56,6 +55,6 @@ impl FromStr for Card {
             .try_into()
             .expect("Win count too large");
 
-        Ok(Card { win_count, copies_left: 1, copies_kept: 0 })
+        Ok(Card { win_count, copies: 1 })
     }
 }

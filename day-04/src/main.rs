@@ -3,17 +3,10 @@ use std::io;
 use std::io::{Read, Seek};
 use std::path::{Path, PathBuf};
 
-use day_04::{Card, Game};
+use day_04::Game;
 
 pub fn data_dir() -> PathBuf {
     Path::new(file!()).ancestors().nth(2).unwrap().join("data")
-}
-
-fn run<R, F>(input: R, mut game_score: F) -> io::Result<u64>
-    where R: Read, F: FnMut(Game) -> u64
-{
-    let game = Game::read(input)?;
-    Ok(game_score(game))
 }
 
 // Answer: 21105
@@ -23,38 +16,24 @@ fn part1(game: Game) -> u64 {
     })
 }
 
-fn part2_handle_wins(card: &mut Card, cards_after: &mut [Card]) -> bool {
-    let copies = card.copies_left;
-    card.copies_left = 0;
-    card.copies_kept += copies;
-    if copies == 0 || card.win_count == 0 {
-        // No wins
-        return false;
-    }
-
-    for c in &mut cards_after[..card.win_count as usize] {
-        c.copies_left += copies;
-    }
-
-    true
-}
-
 // Answer: 5329815
 fn part2(mut game: Game) -> u64 {
-    loop {
-        let mut won_in_round = false;
-        for i in 0..game.cards.len() {
-            let (cards_before_incl, cards_after) = game.cards.split_at_mut(i + 1);
-            let card = cards_before_incl.iter_mut().last().unwrap();
-            won_in_round |= part2_handle_wins(card, cards_after);
-        }
-
-        if !won_in_round {
-            break;
+    for i in 0..game.cards.len() {
+        let (cards_before_incl, cards_after) = game.cards.split_at_mut(i + 1);
+        let card = cards_before_incl.iter_mut().last().unwrap();
+        for c in &mut cards_after[..card.win_count as usize] {
+            c.copies += card.copies;
         }
     }
 
-    game.cards.iter().map(|card| card.copies_kept as u64).sum()
+    game.cards.iter().map(|card| card.copies as u64).sum()
+}
+
+fn run<R, F>(input: R, mut game_score: F) -> io::Result<u64>
+    where R: Read, F: FnMut(Game) -> u64
+{
+    let game = Game::read(input)?;
+    Ok(game_score(game))
 }
 
 fn main() -> Result<(), anyhow::Error> {
