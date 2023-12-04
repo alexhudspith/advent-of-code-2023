@@ -7,6 +7,8 @@ use std::str::FromStr;
 
 use itertools::Itertools;
 
+pub type Cards = Vec<Card>;
+
 fn invalid_data<E: Error + Send + Sync + 'static>(e: E) -> io::Error {
     io::Error::new(io::ErrorKind::InvalidData, e)
 }
@@ -19,20 +21,11 @@ fn parse_cards(lines: impl Iterator<Item=String>) -> Result<Vec<Card>, ParseIntE
     lines.map(|line| line.parse()).try_collect()
 }
 
-pub struct Game {
-    pub cards: Vec<Card>,
-}
-
-impl Game {
-    pub fn read<R: Read>(input: R) -> Result<Game, io::Error> {
-        let cards: Result<Vec<Card>, io::Error> =
-            BufReader::new(input).lines()
-            .process_results(|lines|
-                parse_cards(lines).map_err(invalid_data)
-            )?;
-
-        Ok(Game { cards: cards? })
-    }
+pub fn read_cards<R: Read>(input: R) -> Result<Cards, io::Error> {
+    BufReader::new(input).lines()
+        .process_results(|lines|
+            parse_cards(lines).map_err(invalid_data)
+        )?
 }
 
 pub struct Card {
