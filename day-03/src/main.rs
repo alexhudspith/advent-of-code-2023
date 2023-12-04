@@ -3,39 +3,41 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 
-use day_03::{number_spans, maybe_gear, is_symbol, Schematic};
+use day_03::{number_spans, maybe_gear, is_symbol, Schematic, ColSpan};
 
 pub fn data_dir() -> PathBuf {
     Path::new(file!()).ancestors().nth(2).unwrap().join("data")
 }
 
 pub fn run<F>(schematic: &Schematic, mut f: F) -> anyhow::Result<u64>
-    where F: FnMut(u64, usize, usize, usize) -> u64
+    where F: FnMut(u64, ColSpan) -> u64
 {
     let mut total = 0;
     for (row, line) in schematic.iter_rows().enumerate() {
-        for (start, end) in number_spans(line.iter().enumerate()) {
-            let digits = std::str::from_utf8(&line[start..end])?;
-            total += f(digits.parse()?, row, start, end);
+        for col_span in number_spans(row, line.iter().enumerate()) {
+            let digits = std::str::from_utf8(&line[col_span.start..col_span.end])?;
+            total += f(digits.parse()?, col_span);
         }
     }
 
     Ok(total)
 }
 
-pub fn part1_fn<'s>(schematic: &'s Schematic) -> impl FnMut(u64, usize, usize, usize) -> u64 + 's {
-    |number, row, start_col, end_col| {
-        schematic.find_in_frame(is_symbol, row, start_col, end_col)
+// Answer: 536202
+pub fn part1_fn(schematic: &Schematic) -> impl FnMut(u64, ColSpan) -> u64 + '_ {
+    |number, col_span| {
+        schematic.find_in_frame(is_symbol, col_span)
             .map(|_| number)
             .unwrap_or(0)
     }
 }
 
-pub fn part2_fn<'s>(schematic: &'s Schematic) -> impl FnMut(u64, usize, usize, usize) -> u64 + 's {
+// Answer: 78272573
+pub fn part2_fn(schematic: &Schematic) -> impl FnMut(u64, ColSpan) -> u64 + '_ {
     let mut numbers_by_gear_pos = HashMap::new();
 
-    move |number, row, start_col, end_col| {
-        let gear_pos = schematic.find_in_frame(maybe_gear, row, start_col, end_col);
+    move |number, col_span| {
+        let gear_pos = schematic.find_in_frame(maybe_gear, col_span);
         if let Some((gr, gc)) = gear_pos {
             match numbers_by_gear_pos.entry((gr, gc)) {
                 Entry::Occupied(entry) => { return entry.remove() * number; }

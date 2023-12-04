@@ -1,20 +1,28 @@
 use std::io;
 use std::io::{BufRead, BufReader, Read};
 use std::iter::{once, repeat};
+
 use itertools::Itertools;
 
 const BLANK: u8 = b'.';
 const GEAR: u8 = b'*';
 
-pub fn number_spans<'a>(iter: impl Iterator<Item=(usize, &'a u8)>) -> impl Iterator<Item=(usize, usize)> {
-    iter.batching(|it| {
-        let mut new_it = it
+pub struct ColSpan {
+    pub row: usize,
+    pub start: usize,
+    pub end: usize,
+}
+
+pub fn number_spans<'a>(row: usize, iter: impl Iterator<Item=(usize, &'a u8)>) -> impl Iterator<Item=ColSpan> {
+    iter.batching(move |it| {
+        let mut digits = it
             .skip_while(|(_, chr)| !chr.is_ascii_digit())
             .take_while(|(_, chr)| chr.is_ascii_digit())
             .map(|(c, _)| c);
 
-        let start_opt = new_it.next();
-        start_opt.map(|start| (start, new_it.last().unwrap_or(start) + 1))
+        let start = digits.next()?;
+        let end = digits.last().unwrap_or(start) + 1;
+        Some(ColSpan { row, start, end })
     })
 }
 
@@ -66,13 +74,18 @@ impl Schematic {
         self.rows.iter()
     }
 
-    pub fn find_in_frame<F>(&self, mut predicate: F,
-        row: usize, start_col: usize, end_col: usize) -> Option<(usize, usize)>
-        where F: FnMut(u8) -> bool
+    pub fn frame(&self, col_span: ColSpan) -> impl Iterator<Item=(usize, usize)> + '_
     {
-        let (top, bottom, left, right) = (row - 1, row + 1, start_col - 1, end_col);
+        let row = col_span.row;
+        let (top, bottom, left, right) = (row - 1, row + 1, col_span.start - 1, col_span.end);
         let horiz = [top, bottom].into_iter().cartesian_product(left..=right);
         let vert = [(row, left), (row, right)];
-        horiz.chain(vert).find(|&(r, c)| predicate(self.rows[r][c]))
+        horiz.chain(vert)
+    }
+
+    pub fn find_in_frame<F>(&self, mut predicate: F, col_span: ColSpan) -> Option<(usize, usize)>
+        where F: FnMut(u8) -> bool
+    {
+        self.frame(col_span).find(|&(r, c)| predicate(self.rows[r][c]))
     }
 }
