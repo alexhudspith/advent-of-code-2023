@@ -18,15 +18,14 @@ fn part1(cards: Cards) -> u64 {
 
 // Answer: 5329815
 fn part2(mut cards: Cards) -> u64 {
-    for i in 0..cards.len() {
-        let (cards_before_incl, cards_after) = cards.split_at_mut(i + 1);
-        let card = cards_before_incl.iter_mut().last().unwrap();
-        for c in &mut cards_after[..card.win_count as usize] {
-            c.copies += card.copies;
-        }
-    }
-
-    cards.iter().map(|card| card.copies as u64).sum()
+    (0..cards.len())
+        .map(|i| {
+            let (copies, win_count) = (cards[i].copies, cards[i].win_count);
+            let cards_after = &mut cards[(i + 1)..][..win_count as usize];
+            cards_after.iter_mut().for_each(|c| c.copies += copies);
+            copies as u64
+        })
+        .sum()
 }
 
 fn run<R, F>(input: R, mut score: F) -> io::Result<u64>
