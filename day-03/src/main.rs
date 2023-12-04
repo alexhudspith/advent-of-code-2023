@@ -9,14 +9,14 @@ pub fn data_dir() -> PathBuf {
     Path::new(file!()).ancestors().nth(2).unwrap().join("data")
 }
 
-pub fn run<F>(schematic: &Schematic, mut f: F) -> anyhow::Result<u64>
-    where F: FnMut(u64, ColSpan) -> u64
+pub fn run<F>(schematic: &Schematic, mut score: F) -> anyhow::Result<u64>
+    where F: FnMut(&Schematic, u64, ColSpan) -> u64
 {
     let mut total = 0;
     for (row, line) in schematic.iter_rows().enumerate() {
         for col_span in number_spans(row, line.iter().enumerate()) {
             let digits = std::str::from_utf8(&line[col_span.start..col_span.end])?;
-            total += f(digits.parse()?, col_span);
+            total += score(schematic, digits.parse()?, col_span);
         }
     }
 
@@ -24,8 +24,8 @@ pub fn run<F>(schematic: &Schematic, mut f: F) -> anyhow::Result<u64>
 }
 
 // Answer: 536202
-pub fn part1_fn(schematic: &Schematic) -> impl FnMut(u64, ColSpan) -> u64 + '_ {
-    |number, col_span| {
+pub fn part1_fn() -> impl FnMut(&Schematic, u64, ColSpan) -> u64 {
+    |schematic, number, col_span| {
         schematic.find_in_frame(is_symbol, col_span)
             .map(|_| number)
             .unwrap_or(0)
@@ -33,10 +33,10 @@ pub fn part1_fn(schematic: &Schematic) -> impl FnMut(u64, ColSpan) -> u64 + '_ {
 }
 
 // Answer: 78272573
-pub fn part2_fn(schematic: &Schematic) -> impl FnMut(u64, ColSpan) -> u64 + '_ {
+pub fn part2_fn() -> impl FnMut(&Schematic, u64, ColSpan) -> u64 {
     let mut numbers_by_gear_pos = HashMap::new();
 
-    move |number, col_span| {
+    move |schematic, number, col_span| {
         let gear_pos = schematic.find_in_frame(maybe_gear, col_span);
         if let Some((gr, gc)) = gear_pos {
             match numbers_by_gear_pos.entry((gr, gc)) {
@@ -52,9 +52,9 @@ pub fn part2_fn(schematic: &Schematic) -> impl FnMut(u64, ColSpan) -> u64 + '_ {
 fn main() -> Result<(), anyhow::Error> {
     let f = File::open(data_dir().join("input.txt"))?;
     let s = Schematic::read(f)?;
-    let total = run(&s, part1_fn(&s))?;
+    let total = run(&s, part1_fn())?;
     println!("Part 1: {}", total);
-    let total = run(&s, part2_fn(&s))?;
+    let total = run(&s, part2_fn())?;
     println!("Part 2: {}", total);
     Ok(())
 }
@@ -82,7 +82,7 @@ mod tests {
     fn part1_example() {
         let r = Cursor::new(EXAMPLE);
         let schematic = Schematic::read(r).unwrap();
-        let v = run(&schematic, part1_fn(&schematic)).unwrap();
+        let v = run(&schematic, part1_fn()).unwrap();
         assert_eq!(v, 4361);
     }
 
@@ -90,7 +90,7 @@ mod tests {
     fn part2_example() {
         let r = Cursor::new(EXAMPLE);
         let schematic = Schematic::read(r).unwrap();
-        let v = run(&schematic, part2_fn(&schematic)).unwrap();
+        let v = run(&schematic, part2_fn()).unwrap();
         assert_eq!(v, 467835);
     }
 }
