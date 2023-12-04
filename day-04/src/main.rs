@@ -31,10 +31,8 @@ fn part2(mut game: Game) -> u64 {
             let (cards_before_incl, cards_after) = game.cards.split_at_mut(i + 1);
             let card = cards_before_incl.iter_mut().last().unwrap();
             let copies = card.copies_left;
-            if copies != 0 {
-                card.copies_kept += copies;
-                card.copies_left = 0;
-            }
+            card.copies_kept += copies;
+            card.copies_left = 0;
             let win_count = if copies == 0 { 0 } else { card.win_count };
             if win_count == 0 {
                 continue;
