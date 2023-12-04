@@ -12,13 +12,11 @@ fn invalid_data<E: Error + Send + Sync + 'static>(e: E) -> io::Error {
 }
 
 fn parse_numbers(line: &str) -> Result<HashSet<u8>, ParseIntError> {
-    line.split_ascii_whitespace()
-        .map(|n| n.parse())
-        .try_collect()
+    line.split_ascii_whitespace().map(|n| n.parse()).try_collect()
 }
 
 fn parse_cards(lines: impl Iterator<Item=String>) -> Result<Vec<Card>, ParseIntError> {
-    lines.map(|line| Card::from_str(&line)).try_collect()
+    lines.map(|line| line.parse()).try_collect()
 }
 
 pub struct Game {

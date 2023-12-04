@@ -3,7 +3,7 @@ use std::io;
 use std::io::{Read, Seek};
 use std::path::{Path, PathBuf};
 
-use day_04::Game;
+use day_04::{Card, Game};
 
 pub fn data_dir() -> PathBuf {
     Path::new(file!()).ancestors().nth(2).unwrap().join("data")
@@ -23,28 +23,33 @@ fn part1(game: Game) -> u64 {
     })
 }
 
+fn part2_handle_wins(card: &mut Card, cards_after: &mut [Card]) -> bool {
+    let copies = card.copies_left;
+    card.copies_left = 0;
+    card.copies_kept += copies;
+    if copies == 0 || card.win_count == 0 {
+        // No wins
+        return false;
+    }
+
+    for c in &mut cards_after[..card.win_count as usize] {
+        c.copies_left += copies;
+    }
+
+    true
+}
+
 // Answer: 5329815
 fn part2(mut game: Game) -> u64 {
     loop {
-        let mut won_cards = false;
+        let mut won_in_round = false;
         for i in 0..game.cards.len() {
             let (cards_before_incl, cards_after) = game.cards.split_at_mut(i + 1);
             let card = cards_before_incl.iter_mut().last().unwrap();
-            let copies = card.copies_left;
-            card.copies_kept += copies;
-            card.copies_left = 0;
-            let win_count = if copies == 0 { 0 } else { card.win_count };
-            if win_count == 0 {
-                continue;
-            }
+            won_in_round |= part2_handle_wins(card, cards_after);
+        }
 
-            won_cards = true;
-            for c in &mut cards_after[..win_count as usize] {
-                c.copies_left += copies;
-            }
-        };
-
-        if !won_cards {
+        if !won_in_round {
             break;
         }
     }
