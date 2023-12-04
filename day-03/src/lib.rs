@@ -13,7 +13,9 @@ pub struct ColSpan {
     pub end: usize,
 }
 
-pub fn number_spans<'a>(row: usize, iter: impl Iterator<Item=(usize, &'a u8)>) -> impl Iterator<Item=ColSpan> {
+pub fn number_spans<'a, I>(row: usize, iter: I) -> impl Iterator<Item=ColSpan>
+    where I: Iterator<Item=(usize, &'a u8)>
+{
     iter.batching(move |it| {
         let mut digits = it
             .skip_while(|(_, chr)| !chr.is_ascii_digit())
@@ -74,8 +76,7 @@ impl Schematic {
         self.rows.iter()
     }
 
-    pub fn frame(&self, col_span: ColSpan) -> impl Iterator<Item=(usize, usize)> + '_
-    {
+    pub fn frame(&self, col_span: ColSpan) -> impl Iterator<Item=(usize, usize)> + '_ {
         let row = col_span.row;
         let (top, bottom, left, right) = (row - 1, row + 1, col_span.start - 1, col_span.end);
         let horiz = [top, bottom].into_iter().cartesian_product(left..=right);
