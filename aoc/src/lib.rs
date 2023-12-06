@@ -87,7 +87,6 @@ fn find_day_dir(day_dirname: &str) -> PathBuf {
 
 pub fn find_path(day_dirname: &str, filename: &str) -> PathBuf {
     let mut day_dir = find_day_dir(day_dirname);
-    day_dir.push("data");
     day_dir.push(filename);
     day_dir
 }
