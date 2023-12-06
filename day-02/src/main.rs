@@ -1,18 +1,16 @@
 use std::fs::File;
-use std::io;
 use std::io::{BufRead, BufReader, Read, Seek};
 
 use day_02::{Cubes, Game};
 
-fn run<R, F>(input: R, mut game_score: F) -> io::Result<u64>
+fn run<R, F>(input: R, mut game_score: F) -> Result<u64, aoc::Error>
     where R: Read, F: FnMut(&Game) -> u64
 {
     let lines = BufReader::new(input).lines();
     let mut total = 0;
     for line in lines {
         let line = line?;
-        let game: Game = line.parse()
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        let game: Game = line.parse()?;
         total += game_score(&game);
     }
 
@@ -30,7 +28,7 @@ fn part2(game: &Game) -> u64 {
     game.min_cubes().power()
 }
 
-fn main() -> io::Result<()> {
+fn main() -> Result<(), aoc::Error> {
     let path = aoc::find_input_path("day-02");
     let mut f = File::open(path)?;
 

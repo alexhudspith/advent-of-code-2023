@@ -1,28 +1,27 @@
 use std::fs::File;
-use std::io;
 use std::io::{BufRead, BufReader, Read, Seek};
+use aoc::aoc_err;
 
 mod part1;
 mod part2;
 
 pub type UInt = u64;
 
-fn run<R, F>(input: R, mut find_digits: F) -> io::Result<UInt>
+fn run<R, F>(input: R, mut find_digits: F) -> Result<UInt, aoc::Error>
     where R: Read, F: FnMut(&str) -> Option<(UInt, UInt)>
 {
     let lines = BufReader::new(input).lines();
     let mut total = 0;
     for line in lines {
         let line = line?;
-        let (first, last) = find_digits(&line)
-            .ok_or_else(|| io::Error::from(io::ErrorKind::InvalidData))?;
+        let (first, last) = find_digits(&line).ok_or_else(|| aoc_err("No digits in line"))?;
         total += first * 10 + last;
     }
 
     Ok(total)
 }
 
-fn main() -> io::Result<()> {
+fn main() -> Result<(), aoc::Error> {
     let path = aoc::find_input_path("day-01");
     let mut f = File::open(path)?;
 

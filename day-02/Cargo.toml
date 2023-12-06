@@ -12,7 +12,7 @@ name = "day_02"
 doctest = false
 
 [dependencies]
-aoc = { path = "../aoc" }
+aoc = { path = "../aoc", features = ["nom"] }
 derive_builder = { workspace = true }
 nom = { workspace = true }
 

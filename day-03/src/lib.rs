@@ -1,8 +1,8 @@
-use std::io;
 use std::io::{BufRead, BufReader, Read};
 use std::iter::{once, repeat};
 
 use itertools::Itertools;
+use aoc::aoc_err;
 
 const BLANK: u8 = b'.';
 const GEAR: u8 = b'*';
@@ -42,7 +42,7 @@ pub struct Schematic {
 }
 
 impl Schematic {
-    pub fn read<R: Read>(reader: R) -> io::Result<Self> {
+    pub fn read<R: Read>(reader: R) -> Result<Self, aoc::Error> {
         // Pad the schematic edges with '.'' rows and columns for easier processing
         let mut rows = vec!["".to_string().into_bytes()];
 
@@ -57,10 +57,7 @@ impl Schematic {
             }
         }
 
-        let col_count = rows.get(1)
-            .ok_or(io::ErrorKind::InvalidData)?
-            .len();
-
+        let col_count = rows.get(1).ok_or_else(|| aoc_err("Empty schematic"))?.len();
         let padding_row: Vec<u8> = repeat(BLANK).take(col_count).collect();
         rows[0] = padding_row.clone();
         rows.push(padding_row);

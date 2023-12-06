@@ -1,6 +1,7 @@
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fs::File;
+use std::str;
 
 use day_03::{number_spans, maybe_gear, is_symbol, Schematic, ColSpan};
 
@@ -10,7 +11,7 @@ pub fn run<F>(schematic: &Schematic, mut score: F) -> Result<u64, aoc::Error>
     let mut total = 0;
     for (row, line) in schematic.iter_rows().enumerate() {
         for col_span in number_spans(row, line.iter().enumerate()) {
-            let digits = std::str::from_utf8(&line[col_span.start..col_span.end])?;
+            let digits = str::from_utf8(&line[col_span.start..col_span.end])?;
             total += score(schematic, digits.parse()?, col_span);
         }
     }

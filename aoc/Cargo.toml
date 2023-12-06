@@ -12,3 +12,8 @@ doctest = false
 
 [dependencies]
 itertools = { workspace = true }
+nom = { workspace = true, optional = true }
+
+[features]
+default = []
+nom = ["dep:nom"]

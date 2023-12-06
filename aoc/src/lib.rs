@@ -1,7 +1,7 @@
 use std::borrow::Borrow;
 use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter};
-use std::{fs, io};
+use std::{env, fs, io};
 use std::num::ParseIntError;
 use std::path::PathBuf;
 use std::str::{FromStr, Utf8Error};
@@ -65,18 +65,26 @@ impl From<Utf8Error> for Error {
     }
 }
 
+#[cfg(feature = "nom")]
+impl From<nom::error::Error<String>> for Error {
+    fn from(value: nom::error::Error<String>) -> Self {
+        Self::ParseDataError(ParseDataError { reason: value.to_string() })
+    }
+}
+
 pub fn aoc_err<E>(value: E) -> Error where Error: From<E> {
     Error::from(value)
 }
 
 fn find_day_dir(day_dirname: &str) -> PathBuf {
-    let cwd = std::env::current_dir().expect("Can't get current directory");
+    let cwd = env::current_dir().expect("Can't get current directory");
     if cwd.ends_with(day_dirname) {
         return cwd;
     }
 
-    for d in fs::read_dir(cwd).expect("Can't read current directory") {
-        let Ok(d) = d else { continue };
+    let dir_list = fs::read_dir(cwd).expect("Can't read current directory");
+    // flatten: skip unreadable directories
+    for d in dir_list.flatten() {
         if d.file_name() == day_dirname {
             return d.path();
         }
