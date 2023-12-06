@@ -13,23 +13,19 @@ pub fn data_dir() -> PathBuf {
 
 
 fn follow_maps(seeds: &[Range], maps: &[SeedMap]) -> Vec<Range> {
-    // let ranges = seeds.iter().copied().sorted().collect_vec();
-    let ranges = seeds.to_vec();
-    let dest_ranges = maps.iter().fold(ranges, |ranges, map: &SeedMap| map.get_many_ordered(&ranges));
-    assert!(dest_ranges.is_sorted());
-    dest_ranges
+    let ranges = seeds.iter().copied().sorted().collect_vec();
+    maps.iter().fold(ranges, |ranges, map: &SeedMap| map.get_many_ordered(&ranges))
 }
 
 // Answer: 324724204
 fn part1(seed_numbers: &[u64], maps: &[SeedMap]) -> u64 {
-    seed_numbers.iter()
-        .map(|&seed| [Range::from_start_len(seed, 1)])
-        .map(|seeds| follow_maps(&seeds, maps))
-        .inspect(|dest_ranges| assert_eq!(dest_ranges.len(), 1))
-        .map(|dest_ranges| dest_ranges[0])
-        .min()
-        .unwrap()
-        .start()
+    let seeds: Vec<Range> = seed_numbers.iter()
+        .map(|&seed| Range::from_start_len(seed, 1))
+        .collect_vec();
+
+    let sorted_result = follow_maps(&seeds, maps);
+    assert_eq!(sorted_result.len(), seed_numbers.len());
+    sorted_result[0].start()
 }
 
 // Answer: 104070862
@@ -39,9 +35,8 @@ fn part2(seed_numbers: &[u64], maps: &[SeedMap]) -> u64 {
         .map(|(&start, &len)| Range::from_start_len(start, len))
         .collect_vec();
 
-    let result = follow_maps(&seeds, maps);
-    assert!(result.is_sorted());
-    result[0].start()
+    let sorted_result = follow_maps(&seeds, maps);
+    sorted_result[0].start()
 }
 
 fn main() -> Result<(), anyhow::Error> {

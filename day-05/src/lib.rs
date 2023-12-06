@@ -3,7 +3,7 @@
 pub mod parse;
 
 use std::cmp::{max, min};
-
+use std::iter;
 use itertools::Itertools;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -14,34 +14,26 @@ pub struct SeedMap {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct SeedMapEntry {
-    src: u64,
+    src_range: Range,
     dest: u64,
-    len: u64,
 }
 
 impl SeedMapEntry {
     pub(crate) fn new(src: u64, dest: u64, len: u64) -> Self {
-        Self { src, dest, len }
-    }
-
-    #[allow(dead_code)]
-    fn src_range(&self) -> Range {
-        Range::from_start_len(self.src, self.len)
-    }
-
-    #[allow(dead_code)]
-    fn dest_range(&self) -> Range {
-        Range::from_start_len(self.dest, self.len)
+        Self {
+            src_range: Range::from_start_len(src, len),
+            dest
+        }
     }
 
     fn translate(&self, src_ix: u64) -> u64 {
         self.dest
-            .wrapping_sub(self.src_range().start)
+            .wrapping_sub(self.src_range.start)
             .wrapping_add(src_ix)
     }
 
-    fn translate_range(&self, src_range: Range) -> Range {
-        Range::from_start_len(self.translate(src_range.start), src_range.len())
+    fn translate_range(&self, range: Range) -> Range {
+        Range::from_start_len(self.translate(range.start), range.len())
     }
 }
 
@@ -95,41 +87,72 @@ impl SeedMap {
         let mut new_entries = Vec::with_capacity(entries.len() * 2 + 1);
         let mut prev_end = 0;
         for entry in entries {
-            let len = entry.src.saturating_sub(prev_end);
+            let len = entry.src_range.start - prev_end;
             if len > 0 {
-                new_entries.push(SeedMapEntry { src: prev_end, dest: prev_end, len });
+                new_entries.push(SeedMapEntry::new(prev_end, prev_end, len));
             }
             new_entries.push(entry);
-            prev_end = entry.src_range().end;
+            prev_end = entry.src_range.end;
         }
 
-        let len = u64::MAX.saturating_sub(prev_end);
+        let len = u64::MAX - prev_end;
         if len > 0 {
-            new_entries.push(SeedMapEntry { src: prev_end, dest: prev_end, len });
+            new_entries.push(SeedMapEntry::new(prev_end, prev_end, len));
         }
 
         assert!(new_entries.is_sorted());
         new_entries
     }
 
-    fn intersection(&self, src_range: &Range) -> Vec<Range> {
-        let result = self.entries.iter()
-            .map(|entry| (entry, entry.src_range().intersection(src_range)))
-            .filter_map(|(entry, range_opt)|
-                range_opt.map(|r| entry.translate_range(r))
-            )
-            .collect_vec();
+    fn intersect_join<A, B, FA, FB>(&self, mut a_iter: A, mut a_key: FA, mut b_iter: B, mut b_key: FB) ->
+        impl Iterator<Item=(A::Item, B::Item, Range)>
+        where
+            A: Iterator, A::Item: Copy,
+            B: Iterator, B::Item: Copy,
+            FA: FnMut(A::Item) -> Range,
+            FB: FnMut(B::Item) -> Range,
+    {
+        let mut a_opt: Option<A::Item> = a_iter.next();
+        let mut b_opt: Option<B::Item> = b_iter.next();
 
-        let mapping_count = result.iter().map(|r| r.len()).sum::<u64>();
-        assert_eq!(mapping_count, src_range.len(), "Intersections not equal to source range");
-        result
+        iter::from_fn(move || {
+            while let (Some(a), Some(b)) = (a_opt, b_opt) {
+                let a_range = a_key(a);
+                let b_range = b_key(b);
+
+                let result_opt = a_range.intersection(&b_range)
+                    .map(|intersect| (a, b, intersect));
+
+                if b_range.end <= a_range.end {
+                    b_opt = b_iter.next();
+                } else {
+                    a_opt = a_iter.next();
+                }
+
+                if result_opt.is_some() {
+                    return result_opt;
+                }
+            }
+
+            None
+        })
     }
 
-    pub fn get_many_ordered(&self, ranges: &[Range]) -> Vec<Range> {
-        // assert!(ranges.is_sorted(), "ranges param unsorted");
-        ranges.iter()
-            .flat_map(|range| self.intersection(range))
-            .sorted()
-            .collect_vec()
+    pub fn get_many_ordered(&self, src_ranges: &[Range]) -> Vec<Range> {
+        assert!(src_ranges.is_sorted(), "src_ranges param unsorted");
+
+        let a_iter = self.entries.iter().copied();
+        let b_iter = src_ranges.iter().copied();
+        let mut intersect_ranges = self
+            .intersect_join(a_iter, |a| a.src_range, b_iter, |b| b)
+            .map(|(a, _b, inter)| a.translate_range(inter))
+            .collect_vec();
+
+        let mapping_count = intersect_ranges.iter().map(|r| r.len()).sum::<u64>();
+        let src_count = src_ranges.iter().map(|r| r.len()).sum::<u64>();
+        assert_eq!(mapping_count, src_count, "Intersections not equal to source range");
+
+        intersect_ranges.sort();
+        intersect_ranges
     }
 }
