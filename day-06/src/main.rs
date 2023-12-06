@@ -22,12 +22,15 @@ fn quadratic_roots(a: f64, b: f64, c: f64) -> Option<(f64, f64)> {
     Some((r1, r2))
 }
 
-fn win_count(race: Race) -> anyhow::Result<u64> {
+fn win_count(race: Race) -> u64 {
     let t = race.time as f64;
     let k = race.distance as f64;
-    let Some((a, b)) = quadratic_roots(1.0, -t, k) else { bail!("No real roots!") };
-    let integer_diff = (a.ceil() as u64 - 1) - (b.floor() as u64 + 1) + 1;
-    Ok(integer_diff)
+    if let Some((a, b)) = quadratic_roots(1.0, -t, k) {
+        (a.ceil() as u64 - 1) - (b.floor() as u64 + 1) + 1
+    } else {
+        // No real roots => distance was impossible => no wins
+        0
+    }
 }
 
 fn numbers<T: FromStr>(line: &str) -> Result<Vec<T>, T::Err> where T::Err: Debug {
@@ -64,14 +67,14 @@ fn parse_races(s: &str, keep_space: bool) -> anyhow::Result<Vec<Race>> {
 // Answer: 211904
 fn part1(s: &str) -> anyhow::Result<u64> {
     let races = parse_races(s, true)?;
-    races.into_iter().map(win_count).process_results(|iter| iter.product())
+    Ok(races.into_iter().map(win_count).product())
 }
 
 // Answer: 43364472
 fn part2(s: &str) -> anyhow::Result<u64> {
     let races = parse_races(s, false)?;
     assert_eq!(races.len(), 1);
-    win_count(races[0])
+    Ok(win_count(races[0]))
 }
 
 fn main() -> anyhow::Result<()> {
@@ -82,10 +85,8 @@ fn main() -> anyhow::Result<()> {
 
     let answer = part1(s)?;
     println!("Part 1: {answer}");
-
     let answer = part2(s)?;
     println!("Part 1: {answer}");
-
     Ok(())
 }
 
