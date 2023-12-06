@@ -1,12 +1,6 @@
 use std::fs::File;
-use std::io;
 use std::io::{Read, Seek};
-use std::path::{Path, PathBuf};
 use day_04::{Cards, read_cards};
-
-pub fn data_dir() -> PathBuf {
-    Path::new(file!()).ancestors().nth(2).unwrap().join("data")
-}
 
 // Answer: 21105
 fn part1(cards: Cards) -> u64 {
@@ -28,15 +22,16 @@ fn part2(mut cards: Cards) -> u64 {
         .sum()
 }
 
-fn run<R, F>(input: R, mut score: F) -> io::Result<u64>
+fn run<R, F>(input: R, mut score: F) -> Result<u64, aoc::Error>
     where R: Read, F: FnMut(Cards) -> u64
 {
     let cards = read_cards(input)?;
     Ok(score(cards))
 }
 
-fn main() -> Result<(), anyhow::Error> {
-    let mut f = File::open(data_dir().join("input.txt"))?;
+fn main() -> Result<(), aoc::Error> {
+    let path = aoc::find_input_path("day-04");
+    let mut f = File::open(path)?;
 
     let total = run(&f, part1)?;
     println!("Part 1: {}", total);

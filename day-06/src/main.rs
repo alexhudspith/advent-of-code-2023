@@ -1,9 +1,9 @@
 use std::fmt::Debug;
 use std::str::FromStr;
 
-use anyhow::{anyhow, bail};
 use indoc::indoc;
 use itertools::{Itertools, zip_eq};
+use aoc::aoc_err;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Race {
@@ -44,14 +44,14 @@ fn squashed_number<T: FromStr>(line: &str) -> Result<T, T::Err> where T::Err: De
         .parse()
 }
 
-fn parse_races(s: &str, keep_space: bool) -> anyhow::Result<Vec<Race>> {
+fn parse_races(s: &str, keep_space: bool) -> Result<Vec<Race>, aoc::Error> {
     let lines = s.split_terminator('\n')
         .filter(|line| !line.is_empty())
         .collect_vec();
 
-    let [times, distances] = lines.as_slice() else { bail!("Incorrect line count") };
-    let times = times.strip_prefix("Time:").ok_or_else(|| anyhow!("No Time row"))?;
-    let distances = distances.strip_prefix("Distance:").ok_or_else(|| anyhow!("No Distances row"))?;
+    let [times, distances] = lines.as_slice() else { return Err(aoc_err("Incorrect line count")) };
+    let times = times.strip_prefix("Time:").ok_or_else(|| aoc_err("No Time row"))?;
+    let distances = distances.strip_prefix("Distance:").ok_or_else(|| aoc_err("No Distances row"))?;
 
     let result = if keep_space {
         zip_eq(numbers(times)?, numbers(distances)?)
@@ -65,19 +65,19 @@ fn parse_races(s: &str, keep_space: bool) -> anyhow::Result<Vec<Race>> {
 }
 
 // Answer: 211904
-fn part1(s: &str) -> anyhow::Result<u64> {
+fn part1(s: &str) -> Result<u64, aoc::Error> {
     let races = parse_races(s, true)?;
     Ok(races.into_iter().map(win_count).product())
 }
 
 // Answer: 43364472
-fn part2(s: &str) -> anyhow::Result<u64> {
+fn part2(s: &str) -> Result<u64, aoc::Error> {
     let races = parse_races(s, false)?;
     assert_eq!(races.len(), 1);
     Ok(win_count(races[0]))
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() -> Result<(), aoc::Error> {
     let s = indoc!{"
         Time:        56     71     79     99
         Distance:   334   1135   1350   2430

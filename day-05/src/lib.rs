@@ -1,10 +1,9 @@
-#![feature(is_sorted)]
-
 pub mod parse;
 
 use std::cmp::{max, min};
 use std::iter;
 use itertools::Itertools;
+use aoc::is_sorted;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SeedMap {
@@ -100,7 +99,7 @@ impl SeedMap {
             new_entries.push(SeedMapEntry::new(prev_end, prev_end, len));
         }
 
-        assert!(new_entries.is_sorted());
+        debug_assert!(is_sorted(&new_entries));
         new_entries
     }
 
@@ -139,7 +138,7 @@ impl SeedMap {
     }
 
     pub fn get_many_ordered(&self, src_ranges: &[Range]) -> Vec<Range> {
-        assert!(src_ranges.is_sorted(), "src_ranges param unsorted");
+        assert!(is_sorted(src_ranges), "src_ranges param unsorted");
 
         let a_iter = self.entries.iter().copied();
         let b_iter = src_ranges.iter().copied();
@@ -148,9 +147,11 @@ impl SeedMap {
             .map(|(a, _b, inter)| a.translate_range(inter))
             .collect_vec();
 
-        let mapping_count = intersect_ranges.iter().map(|r| r.len()).sum::<u64>();
-        let src_count = src_ranges.iter().map(|r| r.len()).sum::<u64>();
-        assert_eq!(mapping_count, src_count, "Intersections not equal to source range");
+        if cfg!(debug_assertions) {
+            let mapping_count: u64 = intersect_ranges.iter().map(|r| r.len()).sum();
+            let src_count: u64 = src_ranges.iter().map(|r| r.len()).sum();
+            debug_assert_eq!(mapping_count, src_count, "Intersections not equal to source range");
+        }
 
         intersect_ranges.sort();
         intersect_ranges

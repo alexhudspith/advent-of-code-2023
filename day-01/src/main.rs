@@ -1,16 +1,11 @@
 use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader, Read, Seek};
-use std::path::{Path, PathBuf};
 
 mod part1;
 mod part2;
 
 pub type UInt = u64;
-
-pub fn data_dir() -> PathBuf {
-    Path::new(file!()).ancestors().nth(2).unwrap().join("data")
-}
 
 fn run<R, F>(input: R, mut find_digits: F) -> io::Result<UInt>
     where R: Read, F: FnMut(&str) -> Option<(UInt, UInt)>
@@ -28,7 +23,7 @@ fn run<R, F>(input: R, mut find_digits: F) -> io::Result<UInt>
 }
 
 fn main() -> io::Result<()> {
-    let path = data_dir().join("input.txt");
+    let path = aoc::find_input_path("day-01");
     let mut f = File::open(path)?;
 
     let total = run(&f, part1::find_digits_fn())?;

@@ -7,8 +7,9 @@ edition.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nom = { workspace = true }
+aoc = { path = "../aoc" }
 derive_builder = { workspace = true }
+nom = { workspace = true }
 
 [dev-dependencies]
 indoc = { workspace = true }

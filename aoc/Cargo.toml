@@ -1,16 +1,11 @@
 [package]
-name = "day-03"
+name = "aoc"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
+repository.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aoc = { path = "../aoc" }
-derive_builder = { workspace = true }
 itertools = { workspace = true }
-nom = { workspace = true }
-
-[dev-dependencies]
-indoc = { workspace = true }

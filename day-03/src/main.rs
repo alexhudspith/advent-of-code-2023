@@ -1,15 +1,10 @@
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fs::File;
-use std::path::{Path, PathBuf};
 
 use day_03::{number_spans, maybe_gear, is_symbol, Schematic, ColSpan};
 
-pub fn data_dir() -> PathBuf {
-    Path::new(file!()).ancestors().nth(2).unwrap().join("data")
-}
-
-pub fn run<F>(schematic: &Schematic, mut score: F) -> anyhow::Result<u64>
+pub fn run<F>(schematic: &Schematic, mut score: F) -> Result<u64, aoc::Error>
     where F: FnMut(&Schematic, u64, ColSpan) -> u64
 {
     let mut total = 0;
@@ -49,8 +44,10 @@ pub fn part2_fn() -> impl FnMut(&Schematic, u64, ColSpan) -> u64 {
     }
 }
 
-fn main() -> Result<(), anyhow::Error> {
-    let f = File::open(data_dir().join("input.txt"))?;
+fn main() -> Result<(), aoc::Error> {
+    let path = aoc::find_input_path("day-03");
+    let f = File::open(path)?;
+
     let s = Schematic::read(f)?;
     let total = run(&s, part1_fn())?;
     println!("Part 1: {}", total);

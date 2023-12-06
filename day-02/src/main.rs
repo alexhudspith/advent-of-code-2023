@@ -1,13 +1,8 @@
 use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader, Read, Seek};
-use std::path::{Path, PathBuf};
 
 use day_02::{Cubes, Game};
-
-pub fn data_dir() -> PathBuf {
-    Path::new(file!()).ancestors().nth(2).unwrap().join("data")
-}
 
 fn run<R, F>(input: R, mut game_score: F) -> io::Result<u64>
     where R: Read, F: FnMut(&Game) -> u64
@@ -36,7 +31,7 @@ fn part2(game: &Game) -> u64 {
 }
 
 fn main() -> io::Result<()> {
-    let path = data_dir().join("input.txt");
+    let path = aoc::find_input_path("day-02");
     let mut f = File::open(path)?;
 
     let total = run(&f, part1)?;

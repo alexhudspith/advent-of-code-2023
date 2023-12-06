@@ -1,16 +1,8 @@
-#![feature(is_sorted)]
-
 use std::fs::File;
-use std::path::{Path, PathBuf};
 
 use itertools::Itertools;
 
 use day_05::*;
-
-pub fn data_dir() -> PathBuf {
-    Path::new(file!()).ancestors().nth(2).unwrap().join("data")
-}
-
 
 fn follow_maps(seeds: &[Range], maps: &[SeedMap]) -> Vec<Range> {
     let ranges = seeds.iter().copied().sorted().collect_vec();
@@ -39,8 +31,9 @@ fn part2(seed_numbers: &[u64], maps: &[SeedMap]) -> u64 {
     sorted_result[0].start()
 }
 
-fn main() -> Result<(), anyhow::Error> {
-    let f = File::open(data_dir().join("input.txt"))?;
+fn main() -> Result<(), aoc::Error> {
+    let path = aoc::find_input_path("day-05");
+    let f = File::open(path)?;
 
     let (seeds, maps) = parse::read_seed_maps(&f)?;
     let answer = part1(&seeds, &maps);
