@@ -35,11 +35,9 @@ impl SeedMapEntry {
     }
 
     fn translate(&self, src_ix: u64) -> u64 {
-        if self.src > self.dest {
-            src_ix - (self.src - self.dest)
-        } else {
-            src_ix + (self.dest - self.src)
-        }
+        self.dest
+            .wrapping_sub(self.src_range().start)
+            .wrapping_add(src_ix)
     }
 
     fn translate_range(&self, src_range: Range) -> Range {
