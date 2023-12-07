@@ -1,0 +1,17 @@
+[package]
+name = "day-07"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "day_07"
+doctest = false
+
+[dependencies]
+aoc = { path = "../aoc" }
+indoc = { workspace = true }
+itertools = { workspace = true }

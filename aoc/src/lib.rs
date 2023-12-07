@@ -1,7 +1,11 @@
+#![feature(maybe_uninit_uninit_array)]
+#![feature(maybe_uninit_array_assume_init)]
+
 use std::borrow::Borrow;
 use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter};
 use std::{env, fs, io};
+use std::mem::MaybeUninit;
 use std::num::ParseIntError;
 use std::path::PathBuf;
 use std::str::{FromStr, Utf8Error};
@@ -114,7 +118,7 @@ pub fn parse_spaced<T, C>(line: &str) -> Result<C, T::Err>
 }
 
 pub fn parse_lines<T, S>(lines: impl Iterator<Item=S>) -> Result<Vec<T>, T::Err>
-    where T: FromStr, S: Borrow<String>
+    where T: FromStr, S: Borrow<str>
 {
     lines.map(|line| line.borrow().parse()).try_collect()
 }
@@ -131,4 +135,22 @@ pub fn expect_next_ok<T, E>(mut lines: impl Iterator<Item=Result<T, E>>, message
 // Copied from #[unstable(feature = "is_sorted", reason = "new API", issue = "53485")]
 pub fn is_sorted<T: PartialOrd>(slice: &[T]) -> bool {
     slice.iter().tuple_windows::<(_, _)>().all(|(a, b)| a.partial_cmp(b).map_or(false, Ordering::is_le))
+}
+
+pub trait CollectArray<const N: usize, I: Iterator> {
+    fn collect_array(self) -> [I::Item; N];
+}
+
+impl<const N: usize, I: Iterator> CollectArray<N, I> for I {
+    fn collect_array(mut self) -> [I::Item; N] {
+        unsafe {
+            let mut result: [MaybeUninit<I::Item>; N] = MaybeUninit::uninit_array();
+            for r in &mut result {
+                r.as_mut_ptr().write(self.next().expect("Two few items for array"));
+            }
+
+            let None = self.next() else { panic!("Too many items for array") };
+            MaybeUninit::array_assume_init(result)
+        }
+    }
 }
