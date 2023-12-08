@@ -6,6 +6,11 @@ use itertools::Itertools;
 
 type LeftRight = (String, String);
 
+struct Graph {
+    directions: String,
+    edges: HashMap<String, LeftRight>,
+}
+
 fn parse_line(line: String) -> Result<(String, LeftRight), aoc::Error> {
     let (source, _, left, right) = line
         .split_ascii_whitespace()
@@ -17,15 +22,15 @@ fn parse_line(line: String) -> Result<(String, LeftRight), aoc::Error> {
     Ok((source, (left, right)))
 }
 
-fn read<R: Read>(input: R) -> Result<(String, HashMap<String, LeftRight>), aoc::Error> {
+fn read<R: Read>(input: R) -> Result<Graph, aoc::Error> {
     let mut lines = BufReader::new(input).lines();
     let directions = lines.next().ok_or("No directions line")??.trim().to_string();
     let _blank = lines.next().ok_or("Expected blank line")??;
-    let graph = lines.process_results(|lines| {
+    let edges = lines.process_results(|lines| {
         lines.map(parse_line).try_collect()
     })??;
 
-    Ok((directions, graph))
+    Ok(Graph { directions, edges })
 }
 
 pub fn choose<'a>(left: &'a str, right: &'a str, direction: char) -> &'a str {
@@ -41,16 +46,16 @@ pub fn run<R, P>(input: R, mut is_start_node: P) -> Result<usize, aoc::Error>
         R: Read,
         P: FnMut(&str) -> bool
 {
-    let (directions, graph) = read(input)?;
+    let graph = read(input)?;
 
-    let start_nodes = graph.keys()
+    let start_nodes = graph.edges.keys()
         .filter(|&k| is_start_node(k))
         .map(|s| s.as_str())
         .sorted()
         .collect_vec();
 
     let hops_to_z: Vec<usize> = start_nodes.iter()
-        .flat_map(|node| hops_to_z(&directions, &graph, node))
+        .flat_map(|node| hops_to_z(&graph, node))
         .collect_vec();
 
     let lcm = hops_to_z
@@ -61,11 +66,11 @@ pub fn run<R, P>(input: R, mut is_start_node: P) -> Result<usize, aoc::Error>
     Ok(lcm)
 }
 
-fn hops_to_z(directions: &str, graph: &HashMap<String, LeftRight>, start_node: &str) -> Vec<usize> {
+fn hops_to_z(graph: &Graph, start_node: &str) -> Vec<usize> {
     let mut visited = HashSet::new();
     let mut hops_to_z = Vec::new();
     let mut node = start_node;
-    let iter = directions.chars()
+    let iter = graph.directions.chars()
         .enumerate()
         .cycle()
         .enumerate()
@@ -81,7 +86,7 @@ fn hops_to_z(directions: &str, graph: &HashMap<String, LeftRight>, start_node: &
             hops_to_z.push(hop_ix);
         }
 
-        let (left, right) = &graph[node];
+        let (left, right) = &graph.edges[node];
         if left == right && left == node {
             // Found a simple cycle in both left and right
             break;
