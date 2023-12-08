@@ -7,6 +7,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::{env, fs, io};
 use std::mem::MaybeUninit;
 use std::num::ParseIntError;
+use std::panic::panic_any;
 use std::path::PathBuf;
 use std::str::{FromStr, Utf8Error};
 
@@ -137,20 +138,27 @@ pub fn is_sorted<T: PartialOrd>(slice: &[T]) -> bool {
     slice.iter().tuple_windows::<(_, _)>().all(|(a, b)| a.partial_cmp(b).map_or(false, Ordering::is_le))
 }
 
-pub trait CollectArray<const N: usize, I: Iterator> {
-    fn collect_array(self) -> [I::Item; N];
+pub trait CollectArray<const N: usize> where Self: Iterator + Sized {
+    fn try_collect_array(self) -> Result<[Self::Item; N], &'static str>;
+
+    fn collect_array(self) -> [Self::Item; N] {
+        self.try_collect_array().unwrap_or_else(|e| panic_any(e))
+    }
 }
 
-impl<const N: usize, I: Iterator> CollectArray<N, I> for I {
-    fn collect_array(mut self) -> [I::Item; N] {
+impl<const N: usize, I: Iterator> CollectArray<N> for I {
+    fn try_collect_array(mut self) -> Result<[Self::Item; N], &'static str> {
         unsafe {
-            let mut result: [MaybeUninit<I::Item>; N] = MaybeUninit::uninit_array();
+            let mut result: [MaybeUninit<Self::Item>; N] = MaybeUninit::uninit_array();
             for r in &mut result {
-                r.as_mut_ptr().write(self.next().expect("Two few items for array"));
+                let next = self.next().ok_or("Two few items for array")?;
+                r.as_mut_ptr().write(next);
             }
 
-            let None = self.next() else { panic!("Too many items for array") };
-            MaybeUninit::array_assume_init(result)
+            match self.next() {
+                None => Ok(MaybeUninit::array_assume_init(result)),
+                Some(_) => Err("Too many items for array"),
+            }
         }
     }
 }
