@@ -61,14 +61,14 @@ pub fn run<R, P>(input: R, mut is_start_node: P) -> Result<usize, aoc::Error>
     Ok(lcm)
 }
 
-fn hops_to_z(directions: &str, map: &HashMap<String, LeftRight>, node: &str) -> Vec<usize> {
+fn hops_to_z(directions: &str, map: &HashMap<String, LeftRight>, start_node: &str) -> Vec<usize> {
     directions.chars()
         .enumerate()
         .cycle()
         .enumerate()
-        .map(|(h, (di, d))| (h, di, d))
-        .scan((node, false, HashSet::new()), |(node, stop, visited), (h, di, direction)| {
-            if !(*visited).insert((di, node.to_string())) {
+        .map(|(hop_ix, (dir_ix, dir))| (hop_ix, dir_ix, dir))
+        .scan((start_node, false, HashSet::new()), |(node, stop, visited), (hop_ix, dir_ix, dir)| {
+            if !(*visited).insert((dir_ix, node.to_string())) {
                 // Cycle
                 *stop = true;
             }
@@ -77,14 +77,14 @@ fn hops_to_z(directions: &str, map: &HashMap<String, LeftRight>, node: &str) -> 
                 return None;
             }
 
-            let yield_item = if (*node).ends_with('Z') { Some(h) } else { None };
+            let yield_item = if (*node).ends_with('Z') { Some(hop_ix) } else { None };
             let (left, right) = &map[*node];
             if left == right && left == *node {
                 // Simple cycle in both left and right
                 *stop = true;
             }
 
-            *node = choose(left, right, direction);
+            *node = choose(left, right, dir);
             Some(yield_item)
         })
         .flatten()
