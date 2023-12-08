@@ -21,11 +21,11 @@ fn read<R: Read>(input: R) -> Result<(String, HashMap<String, LeftRight>), aoc::
     let mut lines = BufReader::new(input).lines();
     let directions = lines.next().ok_or("No directions line")??.trim().to_string();
     let _blank = lines.next().ok_or("Expected blank line")??;
-    let map = lines.process_results(|lines| {
+    let graph = lines.process_results(|lines| {
         lines.map(parse_line).try_collect()
     })??;
 
-    Ok((directions, map))
+    Ok((directions, graph))
 }
 
 pub fn choose<'a>(left: &'a str, right: &'a str, direction: char) -> &'a str {
@@ -41,16 +41,16 @@ pub fn run<R, P>(input: R, mut is_start_node: P) -> Result<usize, aoc::Error>
         R: Read,
         P: FnMut(&str) -> bool
 {
-    let (directions, map) = read(input)?;
+    let (directions, graph) = read(input)?;
 
-    let start_nodes = map.keys()
+    let start_nodes = graph.keys()
         .filter(|&k| is_start_node(k))
         .map(|s| s.as_str())
         .sorted()
         .collect_vec();
 
     let hops_to_z: Vec<usize> = start_nodes.iter()
-        .flat_map(|node| hops_to_z(&directions, &map, node))
+        .flat_map(|node| hops_to_z(&directions, &graph, node))
         .collect_vec();
 
     let lcm = hops_to_z
@@ -61,34 +61,35 @@ pub fn run<R, P>(input: R, mut is_start_node: P) -> Result<usize, aoc::Error>
     Ok(lcm)
 }
 
-fn hops_to_z(directions: &str, map: &HashMap<String, LeftRight>, start_node: &str) -> Vec<usize> {
-    directions.chars()
+fn hops_to_z(directions: &str, graph: &HashMap<String, LeftRight>, start_node: &str) -> Vec<usize> {
+    let mut visited = HashSet::new();
+    let mut hops_to_z = Vec::new();
+    let mut node = start_node;
+    let iter = directions.chars()
         .enumerate()
         .cycle()
         .enumerate()
-        .map(|(hop_ix, (dir_ix, dir))| (hop_ix, dir_ix, dir))
-        .scan((start_node, false, HashSet::new()), |(node, stop, visited), (hop_ix, dir_ix, dir)| {
-            if !(*visited).insert((dir_ix, node.to_string())) {
-                // Cycle
-                *stop = true;
-            }
+        .map(|(hop_ix, (dir_ix, dir))| (hop_ix, dir_ix, dir));
 
-            if *stop {
-                return None;
-            }
+    for (hop_ix, dir_ix, dir) in iter {
+        if !visited.insert((dir_ix, node.to_string())) {
+            // Found a cycle
+            break;
+        }
 
-            let yield_item = if (*node).ends_with('Z') { Some(hop_ix) } else { None };
-            let (left, right) = &map[*node];
-            if left == right && left == *node {
-                // Simple cycle in both left and right
-                *stop = true;
-            }
+        if node.ends_with('Z') {
+            hops_to_z.push(hop_ix);
+        }
 
-            *node = choose(left, right, dir);
-            Some(yield_item)
-        })
-        .flatten()
-        .collect_vec()
+        let (left, right) = &graph[node];
+        if left == right && left == node {
+            // Found a simple cycle in both left and right
+            break;
+        }
+        node = choose(left, right, dir);
+    }
+
+    hops_to_z
 }
 
 // Answer: 14681
