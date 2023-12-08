@@ -14,7 +14,6 @@ pub fn run<R, P>(input: R, mut is_start_node: P) -> Result<usize, aoc::Error>
         P: FnMut(Node) -> bool
 {
     let graph = read_graph(input)?;
-
     let start_nodes = graph.edges.keys()
         .filter(|&&k| is_start_node(k))
         .sorted()
@@ -41,14 +40,16 @@ fn hops_to_z(graph: &Graph, start_node: Node) -> Vec<usize> {
     let mut hops_to_z = Vec::new();
     let mut node = start_node;
     let iter = graph.directions.iter()
-        .enumerate()
+        .enumerate()    // dir_ix
         .cycle()
-        .enumerate()
+        .enumerate()    // hop_ix
         .map(|(hop_ix, (dir_ix, &dir))| (hop_ix, dir_ix, dir));
 
     for (hop_ix, dir_ix, dir) in iter {
         if !visited.insert((dir_ix, node)) {
-            // Found a cycle
+            if cfg!(debug_assertions) {
+                eprintln!("{start_node:?}: Cycle at {node:?}, hop_ix {hop_ix}, dir_ix {dir_ix} {dir:?}");
+            }
             break;
         }
 
@@ -58,7 +59,9 @@ fn hops_to_z(graph: &Graph, start_node: Node) -> Vec<usize> {
 
         let (left, right) = graph.edges[&node];
         if left == right && left == node {
-            // Found a simple cycle in both left and right
+            if cfg!(debug_assertions) {
+                eprintln!("Left & right self-loops at node {node:?}");
+            }
             break;
         }
         node = dir.choose(left, right);

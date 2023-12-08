@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::{Debug, Formatter};
 use std::io::{BufRead, BufReader, Read};
 use std::str;
 use std::str::FromStr;
@@ -38,8 +38,8 @@ impl FromStr for Direction {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "L" => Ok(Direction::Left),
-            "R" => Ok(Direction::Right),
+            "L" => Ok(Self::Left),
+            "R" => Ok(Self::Right),
             _ => Err(s.to_string()),
         }
     }
