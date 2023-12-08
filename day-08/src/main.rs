@@ -1,6 +1,3 @@
-#![feature(iter_array_chunks)]
-
-use std::collections::HashSet;
 use std::fs::File;
 use std::io::{Read, Seek};
 use itertools::Itertools;
@@ -36,38 +33,11 @@ pub fn run<R, P>(input: R, mut is_start_node: P) -> Result<usize, aoc::Error>
 }
 
 fn hops_to_z(graph: &Graph, start_node: Node) -> Vec<usize> {
-    let mut visited = HashSet::new();
-    let mut hops_to_z = Vec::new();
-    let mut node = start_node;
-    let iter = graph.directions.iter()
-        .enumerate()    // dir_ix
-        .cycle()
-        .enumerate()    // hop_ix
-        .map(|(hop_ix, (dir_ix, &dir))| (hop_ix, dir_ix, dir));
-
-    for (hop_ix, dir_ix, dir) in iter {
-        if !visited.insert((dir_ix, node)) {
-            if cfg!(debug_assertions) {
-                eprintln!("{start_node:?}: Cycle at {node:?}, hop_ix {hop_ix}, dir_ix {dir_ix} {dir:?}");
-            }
-            break;
-        }
-
-        if node.ends_with(b'Z') {
-            hops_to_z.push(hop_ix);
-        }
-
-        let (left, right) = graph.edges[&node];
-        if left == right && left == node {
-            if cfg!(debug_assertions) {
-                eprintln!("Left & right self-loops at node {node:?}");
-            }
-            break;
-        }
-        node = dir.choose(left, right);
-    }
-
-    hops_to_z
+    graph.iter_at(start_node)
+        .enumerate()
+        .filter(|&(_, node)| node.ends_with(b'Z'))
+        .map(|(hop_ix, _)| hop_ix + 1)
+        .collect_vec()
 }
 
 // Answer: 14681

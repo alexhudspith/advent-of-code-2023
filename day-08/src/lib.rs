@@ -1,16 +1,13 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Formatter};
 use std::io::{BufRead, BufReader, Read};
-use std::str;
+use std::{iter, str};
 use std::str::FromStr;
 use itertools::Itertools;
 use aoc::{CollectArray, expect_next_ok};
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Direction {
-    Left,
-    Right
-}
+pub enum Direction { Left, Right }
 
 impl Direction {
     pub fn choose(&self, left: Node, right: Node) -> Node {
@@ -47,6 +44,7 @@ impl FromStr for Direction {
 
 const N: usize = 3;
 
+#[repr(align(4))]
 #[derive(Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Node([u8; N]);
 
@@ -74,6 +72,37 @@ impl FromStr for Node {
 pub struct Graph {
     pub directions: Vec<Direction>,
     pub edges: HashMap<Node, (Node, Node)>,
+}
+
+impl Graph {
+    pub fn iter_at(&self, start_node: Node) -> impl Iterator<Item=Node> + '_ {
+        let mut visited: HashSet<(usize, Node)> = HashSet::new();
+        let mut node = start_node;
+        let mut iter = self.directions.iter().enumerate().cycle();
+
+        iter::from_fn(move || {
+            let (dir_ix, dir) = iter.next().unwrap();
+            if !visited.insert((dir_ix, node)) {
+                if cfg!(debug_assertions) {
+                    eprintln!("{start_node:?}: Cycle at {node:?}, dir_ix {dir_ix} {dir:?}");
+                }
+
+                return None;
+            }
+
+            let (left, right) = self.edges[&node];
+            if left == right && left == node {
+                if cfg!(debug_assertions) {
+                    eprintln!("Left & right self-loops at node {node:?}");
+                }
+
+                return None;
+            }
+
+            node = dir.choose(left, right);
+            Some(node)
+        })
+    }
 }
 
 fn parse_line(line: String) -> Result<(Node, (Node, Node)), aoc::Error> {
