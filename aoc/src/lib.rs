@@ -124,11 +124,11 @@ pub fn parse_lines<T, S>(lines: impl Iterator<Item=S>) -> Result<Vec<T>, T::Err>
     lines.map(|line| line.borrow().parse()).try_collect()
 }
 
-pub fn expect_next_ok<T, E>(mut lines: impl Iterator<Item=Result<T, E>>, message: &str) -> Result<T, Error>
+pub fn some_ok_or<T, E>(item: Option<Result<T, E>>, message: &str) -> Result<T, Error>
     where Error: From<E>
 {
-    let next: Result<T, E> = lines.next().ok_or_else(|| <Error as From<&str>>::from(message))?;
-    next.map_err(Error::from)
+    let result: Result<T, E> = item.ok_or_else(|| <Error as From<&str>>::from(message))?;
+    result.map_err(Error::from)
 }
 
 #[inline]

@@ -4,7 +4,7 @@ use std::io::{BufRead, BufReader, Read};
 use std::{iter, str};
 use std::str::FromStr;
 use itertools::Itertools;
-use aoc::{CollectArray, expect_next_ok};
+use aoc::{aoc_err, CollectArray, some_ok_or};
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Direction { Left, Right }
@@ -118,13 +118,13 @@ fn parse_line(line: String) -> Result<(Node, (Node, Node)), aoc::Error> {
 
 pub fn read_graph<R: Read>(input: R) -> Result<Graph, aoc::Error> {
     let mut lines = BufReader::new(input).lines();
-    let directions_line = expect_next_ok(&mut lines, "No directions line")?;
+    let directions_line = some_ok_or(lines.next(), "No directions line")?;
     let directions = directions_line
         .trim()
         .chars()
         .map(Direction::try_from)
         .try_collect()?;
-    let _blank = expect_next_ok(&mut lines, "Expected blank line")?;
+    let _blank = some_ok_or(lines.next(), "Expected blank line")?;
     let node_to_adj_pair = lines.process_results(|lines| {
         lines.map(parse_line).try_collect()
     })??;

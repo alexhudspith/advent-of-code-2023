@@ -1,7 +1,7 @@
 use std::io::{BufRead, BufReader, Read};
 
 use itertools::Itertools;
-use aoc::{aoc_err, expect_next_ok, parse_spaced_vec};
+use aoc::{aoc_err, some_ok_or, parse_spaced_vec};
 
 use crate::{SeedMapEntry, SeedMap};
 
@@ -28,10 +28,10 @@ pub fn parse_seed_map(mut lines: impl Iterator<Item=String>) -> Result<SeedMap, 
 pub fn read_seed_maps<R: Read>(input: R) -> Result<(Vec<u64>, Vec<SeedMap>), aoc::Error> {
     let mut lines = BufReader::new(input).lines();
 
-    let first = expect_next_ok(&mut lines, "Empty file")?;
+    let first = some_ok_or(lines.next(), "Empty file")?;
     let seeds = first.strip_prefix("seeds: ").ok_or_else(|| aoc_err("Expected seeds line"))?;
     let seed_numbers = parse_spaced_vec(seeds)?;
-    let _blank = expect_next_ok(&mut lines, "Expected blank line")?;
+    let _blank = some_ok_or(lines.next(), "Expected blank line")?;
 
     let maps: Vec<_> = lines
         .map(|line_res| line_res.unwrap())
