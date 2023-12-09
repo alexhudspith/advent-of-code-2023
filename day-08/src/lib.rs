@@ -2,18 +2,30 @@ use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Formatter};
 use std::io::{BufRead, BufReader, Read};
 use std::{iter, str};
+use std::ops::Index;
 use std::str::FromStr;
 use itertools::Itertools;
 use aoc::{aoc_err, CollectArray, some_ok_or};
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Direction { Left, Right }
+pub enum Direction { Left = 0, Right = 1 }
 
-impl Direction {
-    pub fn choose(&self, left: Node, right: Node) -> Node {
-        match self {
-            Self::Left => left,
-            Self::Right => right,
+impl<T> Index<Direction> for [T; 2] {
+    type Output = T;
+
+    fn index(&self, index: Direction) -> &T {
+        &self[index as usize]
+    }
+}
+
+impl<T> Index<Direction> for (T, T) {
+    type Output = T;
+
+    fn index(&self, index: Direction) -> &T {
+        match index {
+            Direction::Left => &self.0,
+            Direction::Right => &self.1,
+
         }
     }
 }
@@ -99,7 +111,7 @@ impl Graph {
                 return None;
             }
 
-            node = dir.choose(left, right);
+            node = [left, right][dir];
             Some(node)
         })
     }
