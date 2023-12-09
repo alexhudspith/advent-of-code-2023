@@ -132,6 +132,13 @@ fn parse_line(line: String) -> Result<(Node, (Node, Node)), aoc::Error> {
     Ok((source, (left, right)))
 }
 
+fn verify(edges: &HashMap<Node, (Node, Node)>) -> bool {
+    edges.values()
+        .all(|(left, right)|
+            edges.contains_key(left) && edges.contains_key(right)
+        )
+}
+
 pub fn read_graph<R: Read>(input: R) -> Result<Graph, aoc::Error> {
     let mut lines = BufReader::new(input).lines();
     let directions_line = some_ok_or(lines.next(), "No directions line")?;
@@ -144,6 +151,10 @@ pub fn read_graph<R: Read>(input: R) -> Result<Graph, aoc::Error> {
     let node_to_adj_pair = lines.process_results(|lines| {
         lines.map(parse_line).try_collect()
     })??;
+
+    if !verify(&node_to_adj_pair) {
+        return Err(aoc_err("Edge refers to missing node"))
+    }
 
     Ok(Graph { directions, edges: node_to_adj_pair })
 }
