@@ -41,24 +41,24 @@ fn hops_to_z(graph: &Graph, start_node: Node) -> Vec<usize> {
 }
 
 // Answer: 14681
-fn part1<R: Read>(input: R) -> Result<usize, aoc::Error> {
+fn part1_fn() -> Result<impl FnMut(Node) -> bool, aoc::Error> {
     let aaa: Node = "AAA".parse()?;
-    run(input, |node: Node| node == aaa)
+    Ok(move |node: Node| node == aaa)
 }
 
 // Answer: 14321394058031
-fn part2<R: Read>(input: R) -> Result<usize, aoc::Error> {
-    run(input, |node: Node| node.ends_with(b'A'))
+fn part2_fn() -> Result<impl FnMut(Node) -> bool, aoc::Error> {
+    Ok(|node: Node| node.ends_with(b'A'))
 }
 
 fn main() -> Result<(), aoc::Error> {
     let path = aoc::find_input_path("day-08");
     let mut f = File::open(path)?;
 
-    let answer = part1(&mut f)?;
+    let answer = run(&mut f, part1_fn()?)?;
     println!("Part 1: {answer}");
     f.rewind()?;
-    let answer = part2(&mut f)?;
+    let answer = run(&mut f, part2_fn()?)?;
     println!("Part 2: {answer}");
 
     Ok(())
@@ -105,19 +105,22 @@ mod tests {
 
     #[test]
     fn part1_example1() {
-        let total = part1(Cursor::new(EXAMPLE1_1)).unwrap();
+        let part1 = part1_fn().unwrap();
+        let total = run(Cursor::new(EXAMPLE1_1), part1).unwrap();
         assert_eq!(total, 2);
     }
 
     #[test]
     fn part1_example2() {
-        let total = part1(Cursor::new(EXAMPLE1_2)).unwrap();
+        let part1 = part1_fn().unwrap();
+        let total = run(Cursor::new(EXAMPLE1_2), part1).unwrap();
         assert_eq!(total, 6);
     }
 
     #[test]
     fn part2_example() {
-        let total = part2(Cursor::new(EXAMPLE2)).unwrap();
+        let part2 = part2_fn().unwrap();
+        let total = run(Cursor::new(EXAMPLE2), part2).unwrap();
         assert_eq!(total, 6);
     }
 }
