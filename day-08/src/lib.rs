@@ -82,11 +82,15 @@ impl FromStr for Node {
 }
 
 pub struct Graph {
-    pub directions: Vec<Direction>,
-    pub edges: HashMap<Node, (Node, Node)>,
+    directions: Vec<Direction>,
+    edges: HashMap<Node, (Node, Node)>,
 }
 
 impl Graph {
+    pub fn nodes(&self) -> impl Iterator<Item=Node> + '_ {
+        self.edges.keys().copied()
+    }
+
     pub fn iter_at(&self, start_node: Node) -> impl Iterator<Item=Node> + '_ {
         let mut visited: HashSet<(usize, Node)> = HashSet::new();
         let mut node = start_node;

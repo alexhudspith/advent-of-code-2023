@@ -11,8 +11,8 @@ pub fn run<R, P>(input: R, mut is_start_node: P) -> Result<usize, aoc::Error>
         P: FnMut(Node) -> bool
 {
     let graph = read_graph(input)?;
-    let start_nodes = graph.edges.keys()
-        .filter(|&&k| is_start_node(k))
+    let start_nodes = graph.nodes()
+        .filter(|&n| is_start_node(n))
         .sorted()
         .collect_vec();
 
@@ -21,7 +21,7 @@ pub fn run<R, P>(input: R, mut is_start_node: P) -> Result<usize, aoc::Error>
     }
 
     let hops_to_z: Vec<usize> = start_nodes.into_iter()
-        .flat_map(|&node| hops_to_z(&graph, node))
+        .flat_map(|node| hops_to_z(&graph, node))
         .collect_vec();
 
     let lcm = hops_to_z
