@@ -92,17 +92,17 @@ impl Graph {
     }
 
     pub fn iter_at(&self, start_node: Node) -> impl Iterator<Item=Node> + '_ {
-        let mut visited: HashSet<(usize, Node)> = HashSet::new();
+        let mut visited_node_dirs: HashSet<(usize, Node)> = HashSet::with_capacity(22_000);
         let mut node = start_node;
-        let mut iter = self.directions.iter().enumerate().cycle();
+        let mut dir_iter = self.directions.iter().copied().enumerate().cycle();
 
         iter::from_fn(move || {
-            let (dir_ix, dir) = iter.next().unwrap();
-            if !visited.insert((dir_ix, node)) {
+            let (dir_ix, dir) = dir_iter.next().expect("Iterator should be inifinite");
+            if !visited_node_dirs.insert((dir_ix, node)) {
                 if cfg!(debug_assertions) {
                     eprintln!("{start_node:?}: Cycle at {node:?}, dir_ix {dir_ix} {dir:?}");
                 }
-
+                // Exhausted
                 return None;
             }
 
@@ -111,7 +111,7 @@ impl Graph {
                 if cfg!(debug_assertions) {
                     eprintln!("Left & right self-loops at node {node:?}");
                 }
-
+                // Exhausted
                 return None;
             }
 
