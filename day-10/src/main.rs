@@ -41,11 +41,6 @@ pub fn part1(grid: &Grid) -> Result<usize, aoc::Error> {
 // Answer: 281
 pub fn part2(grid: &Grid) -> Result<usize, aoc::Error>
 {
-    let ignore_ways = [
-        Way::Left | Way::Right,   // -
-        Way::Up   | Way::Right,   // F
-        Way::Up   | Way::Left,    // J
-    ];
     let main_loop: HashSet<_> = main_loop(grid)?.into_iter().collect();
 
     let mut count = 0;
@@ -58,11 +53,11 @@ pub fn part2(grid: &Grid) -> Result<usize, aoc::Error>
                 Ways::default()
             };
 
-            if ways.is_empty() {
-                if inside {
-                    count += 1;
-                }
-            } else if !ignore_ways.contains(&ways) {
+            if ways.is_empty() && inside {
+                count += 1;
+            }
+
+            if ways.contains(Way::Down) {
                 inside = !inside;
             }
         }
