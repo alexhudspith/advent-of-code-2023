@@ -81,31 +81,31 @@ pub fn aoc_err<E>(value: E) -> Error where Error: From<E> {
     Error::from(value)
 }
 
-fn find_day_dir(day_dirname: &str) -> PathBuf {
+fn find_dir(dirname: &str) -> PathBuf {
     let cwd = env::current_dir().expect("Can't get current directory");
-    if cwd.ends_with(day_dirname) {
+    if cwd.ends_with(dirname) {
         return cwd;
     }
 
     let dir_list = fs::read_dir(cwd).expect("Can't read current directory");
     // flatten: skip unreadable directories
     for d in dir_list.flatten() {
-        if d.file_name() == day_dirname {
+        if d.file_name() == dirname {
             return d.path();
         }
     }
 
-    panic!("Can't find day directory {day_dirname}");
+    panic!("Can't find directory {dirname}");
 }
 
-pub fn find_path(day_dirname: &str, filename: &str) -> PathBuf {
-    let mut day_dir = find_day_dir(day_dirname);
+pub fn find_path(filename: &str) -> PathBuf {
+    let mut day_dir = find_dir("data");
     day_dir.push(filename);
     day_dir
 }
 
 pub fn find_input_path(day_dirname: &str) -> PathBuf {
-    find_path(day_dirname, "input.txt")
+    find_path(&format!("{day_dirname}.txt"))
 }
 
 pub fn parse_spaced_vec<T>(line: &str) -> Result<Vec<T>, T::Err> where T: FromStr {
