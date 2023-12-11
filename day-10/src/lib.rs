@@ -69,6 +69,7 @@ fn tile_to_ways(c: u8) -> Ways {
     }
 }
 
+#[allow(dead_code)]
 fn ways_to_tile(ways: Ways) -> u8 {
     [
         (Way::Up | Way::Down, b'|'),
@@ -83,6 +84,35 @@ fn ways_to_tile(ways: Ways) -> u8 {
         .find(|&(w, _pipe)| ways == w)
         .unwrap_or_else(|| panic!("Invalid ways: {ways:?}"))
         .1
+}
+
+pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
+    let mut main_loop = Vec::new();
+    let start = start(maze);
+    let mut pos = start;
+    let mut prev_way: Option<Way> = None;
+    loop {
+        main_loop.push(pos);
+
+        let mut ways = ways_available(maze, pos);
+        if let Some(last_direction) = prev_way {
+            ways.remove(last_direction.flipped());
+        }
+
+        if start != pos && ways.len() != 1 {
+            return Err(format!("Expect one way, have {:?}", ways).into());
+        }
+
+        let way = ways.into_iter().next().unwrap();
+        pos = way.step(pos);
+        if pos == start {
+            break;
+        }
+
+        prev_way = Some(way);
+    }
+
+    Ok(main_loop)
 }
 
 pub fn read_maze<R: Read>(reader: R) -> Result<Maze, aoc::Error> {

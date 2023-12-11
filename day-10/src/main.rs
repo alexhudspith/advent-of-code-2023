@@ -1,56 +1,27 @@
 use std::collections::HashSet;
 use std::fs::File;
 
-use day_10::{Maze, Way, Ways, read_maze, start, ways_available};
-
-pub fn main_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
-    let mut main_loop = Vec::new();
-    let start = start(maze);
-    let mut pos = start;
-    let mut prev_way: Option<Way> = None;
-    loop {
-        main_loop.push(pos);
-
-        let mut ways = ways_available(maze, pos);
-        if let Some(last_direction) = prev_way {
-            ways.remove(last_direction.flipped());
-        }
-
-        if start != pos && ways.len() != 1 {
-            return Err(format!("Expect one way, have {:?}", ways).into());
-        }
-
-        let way = ways.into_iter().next().unwrap();
-        pos = way.step(pos);
-        if pos == start {
-            break;
-        }
-
-        prev_way = Some(way);
-    }
-
-    Ok(main_loop)
-}
+use day_10::{Maze, Way, Ways, read_maze, ways_available, maze_pipe_loop};
 
 // Answer: 7107
 pub fn part1(maze: &Maze) -> Result<usize, aoc::Error> {
-    let distance = main_loop(maze)?.len();
+    let distance = maze_pipe_loop(maze)?.len();
     Ok(distance.div_ceil(2))
 }
 
 // Answer: 281
 pub fn part2(maze: &Maze) -> Result<usize, aoc::Error>
 {
-    let main_loop: HashSet<_> = main_loop(maze)?.into_iter().collect();
+    let pipe_loop: HashSet<_> = maze_pipe_loop(maze)?.into_iter().collect();
 
     let mut count = 0;
     for r in 0..maze.shape().0 {
         let mut inside = false;
         for c in 0..maze.shape().1 {
-            let ways = if main_loop.contains(&(r, c)) {
+            let ways = if pipe_loop.contains(&(r, c)) {
                 ways_available(maze, (r, c))
             } else {
-                Ways::default()
+                Ways::empty()
             };
 
             if ways.is_empty() && inside {
@@ -69,11 +40,11 @@ pub fn part2(maze: &Maze) -> Result<usize, aoc::Error>
 fn main() -> Result<(), aoc::Error> {
     let path = aoc::find_input_path("day-10");
     let f = File::open(path)?;
+    let maze = read_maze(f)?;
 
-    let s = read_maze(f)?;
-    let answer = part1(&s)?;
+    let answer = part1(&maze)?;
     println!("Part 1: {answer}");
-    let answer = part2(&s)?;
+    let answer = part2(&maze)?;
     println!("Part 2: {answer}");
     Ok(())
 }
