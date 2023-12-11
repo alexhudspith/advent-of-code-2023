@@ -1,9 +1,9 @@
 use std::fmt::{Display, Formatter};
 use std::io::{BufRead, BufReader, Read};
 use std::iter::{once, repeat};
+use std::ops::Index;
 use enumset::{EnumSet, EnumSetType};
-
-use aoc::aoc_err;
+use itertools::Itertools;
 
 const BLANK: u8 = b'.';
 const START: u8 = b'S';
@@ -40,12 +40,13 @@ pub type Ways = EnumSet<Way>;
 
 #[derive(Debug, Default, Clone)]
 pub struct Grid {
-    pub rows: Vec<Vec<Ways>>,
+    cells: Vec<Ways>,
+    shape: (usize, usize),
 }
 
 impl Grid {
     pub fn shape(&self) -> (usize, usize) {
-        (self.rows.len(), self.rows[0].len())
+        self.shape
     }
 
     pub fn start(&self) -> (usize, usize) {
@@ -53,10 +54,10 @@ impl Grid {
     }
 
     pub fn ways_available(&self, pos: (usize, usize)) -> Ways {
-        let mut ways = self.ways_in_grid(pos);
+        let mut ways = self[pos];
         for dir in ways {
             let neighbour = dir.step(pos);
-            let back_ways = self.ways_in_grid(neighbour);
+            let back_ways = self[neighbour];
             if !back_ways.contains(dir.flipped()) {
                 ways.remove(dir);
             }
@@ -65,29 +66,41 @@ impl Grid {
         if ways.len() < 2 { Ways::default() } else { ways }
     }
 
-    fn ways_in_grid(&self, pos: (usize, usize)) -> Ways {
-        self.rows[pos.0][pos.1]
-    }
-
     fn find<F>(&self, mut pred: F) -> Option<(usize, usize)>
         where F: FnMut(Ways) -> bool
     {
-        self.rows.iter().enumerate()
-            .map(|(r, row)| (r, row.iter().position(|&tile| pred(tile))))
-            .find(|(_, c_opt)| c_opt.is_some())
-            .map(|(r, c_opt)| (r, c_opt.unwrap()))
+        let (i, _) = self.cells.iter().enumerate().find(|&(_, &tile)| pred(tile))?;
+        Some((i / self.shape.1, i % self.shape.0))
     }
 }
 
 impl Display for Grid {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        for row in self.rows.iter() {
-            for &tile in row.iter() {
-                write!(f, "{}", ways_to_tile(tile) as char)?;
+        for c in 0..self.shape.1 {
+            for r in 0..self.shape.0 {
+                write!(f, "{}", ways_to_tile(self[(r, c)]) as char)?;
             }
             writeln!(f)?;
         }
         Ok(())
+    }
+}
+
+impl Index<usize> for Grid {
+    type Output = [Ways];
+
+    fn index(&self, index: usize) -> &Self::Output {
+        let start = index * self.shape.1;
+        let end = start + self.shape.1;
+        &self.cells[start..end]
+    }
+}
+
+impl Index<(usize, usize)> for Grid {
+    type Output = Ways;
+
+    fn index(&self, index: (usize, usize)) -> &Self::Output {
+        &self.cells[index.0 * self.shape.1 + index.1]
     }
 }
 
@@ -121,23 +134,35 @@ fn ways_to_tile(ways: Ways) -> u8 {
 
 pub fn read_grid<R: Read>(reader: R) -> Result<Grid, aoc::Error> {
     // Pad the grid edges with '.'' rows and columns for easier processing
-    let mut rows: Vec<Vec<Ways>> = vec![vec![]];
-
+    let mut cells: Vec<Ways> = vec![];
+    let mut col_count = 0;
     for line in BufReader::new(reader).lines() {
         let line = line?;
-        if !line.is_empty() {
-            let padded_row: Vec<Ways> = once(Ways::default())
+        if line.is_empty() {
+            continue;
+        }
+
+        if cells.is_empty() {
+            // First row all padding
+            col_count = line.len() + 2;
+            let padding = repeat(Ways::default()).take(col_count);
+            cells.extend(padding);
+        }
+
+        if col_count != line.len() + 2 {
+            return Err("Ragged lines".into());
+        }
+
+        // First/last column padding
+        cells.extend(
+            once(Ways::default())
                 .chain(line.bytes().map(tile_to_ways))
                 .chain(once(Ways::default()))
-                .collect();
-            rows.push(padded_row);
-        }
+        );
     }
 
-    let col_count = rows.get(1).ok_or_else(|| aoc_err("Empty grid"))?.len();
-    let padding_row: Vec<Ways> = repeat(Ways::default()).take(col_count).collect();
-    rows[0] = padding_row.clone();
-    rows.push(padding_row);
-
-    Ok(Grid { rows })
+    let padding: Vec<Ways> = cells.iter().take(col_count).copied().collect_vec();
+    cells.extend(padding);
+    let shape = (cells.len() / col_count, col_count);
+    Ok(Grid { cells, shape })
 }
