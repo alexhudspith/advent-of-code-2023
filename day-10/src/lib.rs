@@ -64,7 +64,7 @@ fn tile_to_ways(c: u8) -> Ways {
         b'7' => Way::Down | Way::Left,
         b'F' => Way::Down | Way::Right,
         START => Ways::all(),
-        BLANK => Ways::default(),
+        BLANK => Ways::empty(),
         _ => panic!("Invalid tile: {c}")
     }
 }
@@ -79,7 +79,7 @@ fn ways_to_tile(ways: Ways) -> u8 {
         (Way::Down | Way::Left, b'7'),
         (Way::Down | Way::Right, b'F'),
         (Ways::all(), START),
-        (Ways::default(), BLANK),
+        (Ways::empty(), BLANK),
     ].into_iter()
         .find(|&(w, _pipe)| ways == w)
         .unwrap_or_else(|| panic!("Invalid ways: {ways:?}"))
