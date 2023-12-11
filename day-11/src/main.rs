@@ -56,7 +56,7 @@ fn read_image<R: Read>(reader: R) -> Result<Image, aoc::Error> {
         }
 
         if col_count != line.len() {
-            return Err("Ragged lines".into());
+            return Err(format!("Ragged line at line {}", row_count + 1).into());
         }
 
         let galaxy_iter = line.bytes()
@@ -95,8 +95,8 @@ fn part2(image: &Image) -> usize {
 fn main() -> Result<(), aoc::Error> {
     let path = aoc::find_input_path("day-11");
     let f = File::open(path)?;
-
     let image = read_image(f)?;
+
     let answer = part1(&image);
     println!("Part 1: {answer}");
     let answer = part2(&image);

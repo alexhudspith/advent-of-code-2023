@@ -88,7 +88,7 @@ pub fn read_grid<R, T, F>(reader: R, padding: Option<T>, mut transform: F) -> Re
     // Pad the grid edges with '.'' rows and columns for easier processing
     let mut cells: Vec<T> = vec![];
     let mut expected_col_count = 0;
-    for line in BufReader::new(reader).lines() {
+    for (r, line) in BufReader::new(reader).lines().enumerate() {
         let line = line?;
         if line.is_empty() {
             continue;
@@ -105,7 +105,7 @@ pub fn read_grid<R, T, F>(reader: R, padding: Option<T>, mut transform: F) -> Re
         }
 
         if col_count != expected_col_count {
-            return Err("Ragged lines".into());
+            return Err(format!("Ragged line at line {}", r + 1).into());
         }
 
         // First/last column padding
