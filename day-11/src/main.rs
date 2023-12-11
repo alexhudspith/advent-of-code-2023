@@ -12,15 +12,15 @@ struct Image {
 
 impl Image {
     fn expanded(&self, factor: usize) -> Self {
-        let mut empty_row = vec![true; self.shape.0];
-        let mut empty_col = vec![true; self.shape.1];
+        let mut row_factors = vec![factor - 1; self.shape.0];
+        let mut col_factors = vec![factor - 1; self.shape.1];
         for &(r, c) in &self.galaxies {
-            empty_row[r] = false;
-            empty_col[c] = false;
+            row_factors[r] = 0;
+            col_factors[c] = 0;
         }
 
-        let row_add = cumulative_sum(empty_row.into_iter().map(|v| v as usize * (factor - 1)));
-        let col_add = cumulative_sum(empty_col.into_iter().map(|v| v as usize * (factor - 1)));
+        let row_add = cumulative_sum(row_factors);
+        let col_add = cumulative_sum(col_factors);
 
         let galaxies = self.galaxies.iter()
             .map(|&(r, c)| (r + row_add[r], c + col_add[c]))
