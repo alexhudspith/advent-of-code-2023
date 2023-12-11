@@ -86,6 +86,22 @@ fn ways_to_tile(ways: Ways) -> u8 {
         .1
 }
 
+fn ways_to_graphic(ways: Ways) -> char {
+    [
+        (Way::Up | Way::Down, '│'),
+        (Way::Left | Way::Right, '─'),
+        (Way::Up | Way::Left, '┘'),
+        (Way::Up | Way::Right, '└'),
+        (Way::Down | Way::Left, '┐'),
+        (Way::Down | Way::Right, '┌'),
+        (Ways::all(), '▒'),
+        (Ways::empty(), ' '),
+    ].into_iter()
+        .find(|&(w, _pipe)| ways == w)
+        .unwrap_or_else(|| panic!("Invalid ways: {ways:?}"))
+        .1
+}
+
 pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
     let mut main_loop = Vec::new();
     let start = start(maze);
@@ -116,5 +132,5 @@ pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
 }
 
 pub fn read_maze<R: Read>(reader: R) -> Result<Maze, aoc::Error> {
-    read_grid_with_transform(reader, Some(Ways::empty()), tile_to_ways, |&w| ways_to_tile(w))
+    read_grid_with_transform(reader, Some(Ways::empty()), tile_to_ways, |&w| ways_to_graphic(w))
 }

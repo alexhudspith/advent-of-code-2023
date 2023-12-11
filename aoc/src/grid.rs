@@ -11,7 +11,7 @@ use crate as aoc;
 pub struct Grid<T> {
     shape: (usize, usize),
     cells: Vec<T>,
-    display_transform: Rc<dyn Fn(&T) -> u8>
+    display_transform: Rc<dyn Fn(&T) -> char>
 }
 
 impl<T> Grid<T> {
@@ -83,7 +83,7 @@ pub fn read_grid<R, T>(reader: R, padding: Option<T>) -> Result<Grid<T>, aoc::Er
         R: Read,
         T: Clone + From<u8> + Into<u8>
 {
-    read_grid_with_transform(reader, padding, T::from, |t| t.clone().into())
+    read_grid_with_transform(reader, padding, T::from, |t| t.clone().into() as char)
 }
 
 pub fn read_grid_with_transform<R, T, F, D>(
@@ -93,7 +93,7 @@ pub fn read_grid_with_transform<R, T, F, D>(
         R: Read,
         T: Clone,
         F: FnMut(u8) -> T,
-        D: Fn(&T) -> u8 + 'static,
+        D: Fn(&T) -> char + 'static,
 {
     // Pad the grid edges with '.'' rows and columns for easier processing
     let mut cells: Vec<T> = vec![];
