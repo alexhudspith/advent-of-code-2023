@@ -71,13 +71,17 @@ fn read_image<R: Read>(reader: R) -> Result<Image, aoc::Error> {
     Ok(Image { galaxies, shape })
 }
 
+fn manhattan_distance((r1, c1): (usize, usize), (r2, c2): (usize, usize)) -> usize {
+    r2.abs_diff(r1) + c2.abs_diff(c1)
+}
+
 fn run(image: &Image, expansion_factor: usize) -> usize {
     let image = image.expanded(expansion_factor);
     let first = image.galaxies.iter();
     let second = image.galaxies.iter();
     first.cartesian_product(second)
         .filter(|(a, b)| b > a)
-        .map(|(&(r1, c1), &(r2, c2))| r2.abs_diff(r1) + c2.abs_diff(c1))
+        .map(|(&a, &b)| manhattan_distance(a, b))
         .sum()
 }
 
