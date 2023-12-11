@@ -1,17 +1,17 @@
 use std::collections::HashSet;
 use std::fs::File;
 
-use day_10::{Way, Grid, Ways, read_grid};
+use day_10::{Maze, Way, Ways, read_maze, start, ways_available};
 
-pub fn main_loop(grid: &Grid) -> Result<Vec<(usize, usize)>, aoc::Error> {
+pub fn main_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
     let mut main_loop = Vec::new();
-    let start = grid.start();
+    let start = start(maze);
     let mut pos = start;
     let mut prev_way: Option<Way> = None;
     loop {
         main_loop.push(pos);
 
-        let mut ways = grid.ways_available(pos);
+        let mut ways = ways_available(maze, pos);
         if let Some(last_direction) = prev_way {
             ways.remove(last_direction.flipped());
         }
@@ -33,22 +33,22 @@ pub fn main_loop(grid: &Grid) -> Result<Vec<(usize, usize)>, aoc::Error> {
 }
 
 // Answer: 7107
-pub fn part1(grid: &Grid) -> Result<usize, aoc::Error> {
-    let distance = main_loop(grid)?.len();
+pub fn part1(maze: &Maze) -> Result<usize, aoc::Error> {
+    let distance = main_loop(maze)?.len();
     Ok(distance.div_ceil(2))
 }
 
 // Answer: 281
-pub fn part2(grid: &Grid) -> Result<usize, aoc::Error>
+pub fn part2(maze: &Maze) -> Result<usize, aoc::Error>
 {
-    let main_loop: HashSet<_> = main_loop(grid)?.into_iter().collect();
+    let main_loop: HashSet<_> = main_loop(maze)?.into_iter().collect();
 
     let mut count = 0;
-    for r in 0..grid.shape().0 {
+    for r in 0..maze.shape().0 {
         let mut inside = false;
-        for c in 0..grid.shape().1 {
+        for c in 0..maze.shape().1 {
             let ways = if main_loop.contains(&(r, c)) {
-                grid.ways_available((r, c))
+                ways_available(maze, (r, c))
             } else {
                 Ways::default()
             };
@@ -70,7 +70,7 @@ fn main() -> Result<(), aoc::Error> {
     let path = aoc::find_input_path("day-10");
     let f = File::open(path)?;
 
-    let s = read_grid(f)?;
+    let s = read_maze(f)?;
     let answer = part1(&s)?;
     println!("Part 1: {answer}");
     let answer = part2(&s)?;
@@ -141,40 +141,40 @@ mod tests {
     #[test]
     fn part1_example1() {
         let r = Cursor::new(EXAMPLE1_1);
-        let grid = read_grid(r).unwrap();
-        let v = part1(&grid).unwrap();
+        let maze = read_maze(r).unwrap();
+        let v = part1(&maze).unwrap();
         assert_eq!(v, 4);
     }
 
     #[test]
     fn part1_example2() {
         let r = Cursor::new(EXAMPLE1_2);
-        let grid = read_grid(r).unwrap();
-        let v = part1(&grid).unwrap();
+        let maze = read_maze(r).unwrap();
+        let v = part1(&maze).unwrap();
         assert_eq!(v, 8);
     }
 
     #[test]
     fn part2_example1() {
         let r = Cursor::new(EXAMPLE2_1);
-        let grid = read_grid(r).unwrap();
-        let v = part2(&grid).unwrap();
+        let maze = read_maze(r).unwrap();
+        let v = part2(&maze).unwrap();
         assert_eq!(v, 4);
     }
 
     #[test]
     fn part2_example2() {
         let r = Cursor::new(EXAMPLE2_2);
-        let grid = read_grid(r).unwrap();
-        let v = part2(&grid).unwrap();
+        let maze = read_maze(r).unwrap();
+        let v = part2(&maze).unwrap();
         assert_eq!(v, 8);
     }
 
     #[test]
     fn part2_example3() {
         let r = Cursor::new(EXAMPLE2_3);
-        let grid = read_grid(r).unwrap();
-        let v = part2(&grid).unwrap();
+        let maze = read_maze(r).unwrap();
+        let v = part2(&maze).unwrap();
         assert_eq!(v, 10);
     }
 }
