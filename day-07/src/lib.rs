@@ -39,21 +39,6 @@ pub enum HandType {
     FiveKind,
 }
 
-fn runs(cards: &HandArray<Card>) -> HandArray<u8> {
-    cards.iter()
-        .scan((0, 0), |(prev, run), card| {
-            if *prev == card.ord {
-                *run += 1
-            } else {
-                *run = 1;
-            };
-
-            *prev = card.ord;
-            Some(*run)
-        })
-        .collect_array()
-}
-
 pub fn counts(cards: &HandArray<Card>) -> [u8; CARDS.len()] {
     let mut counts = [0; CARDS.len()];
     for card in cards {
@@ -81,11 +66,10 @@ pub fn chosen_joker_hand(cards: &HandArray<Card>) -> HandArray<Card> {
 }
 
 fn hand_type(cards: &HandArray<Card>) -> HandType {
-    let mut new_cards = chosen_joker_hand(cards);
-    new_cards.sort();
-    let runs = runs(&new_cards);
-    let distinct = runs.iter().copied().filter(|&r| r == 1).sum();
-    let max_run = runs.iter().copied().max().unwrap();
+    let new_cards = chosen_joker_hand(cards);
+    let counts = counts(&new_cards);
+    let distinct = counts.iter().copied().filter(|&c| c != 0).count();
+    let max_run = counts.iter().copied().max().unwrap();
 
     match (distinct, max_run) {
         (1, _) => HandType::FiveKind,
