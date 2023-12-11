@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::io::{BufRead, BufReader, Read};
 use std::iter::{once, repeat};
 use std::ops::Index;
@@ -29,7 +29,7 @@ impl<T> Grid<T> {
         (i / self.shape.1, i % self.shape.1)
     }
 
-    pub fn find<F>(&self, mut predicate: F) -> Option<(usize, usize)>
+    pub fn position<F>(&self, mut predicate: F) -> Option<(usize, usize)>
         where F: FnMut(&T) -> bool
     {
         let (i, _) = self.cells.iter().enumerate().find(|&(_, cell)| predicate(cell))?;
@@ -37,11 +37,23 @@ impl<T> Grid<T> {
     }
 }
 
+impl<T: Debug> Debug for Grid<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        for row in self.iter_rows() {
+            for cell in row.iter() {
+                write!(f, "{:?}", cell)?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
+    }
+}
+
 impl<T: Display> Display for Grid<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        for c in 0..self.shape.1 {
-            for r in 0..self.shape.0 {
-                write!(f, "{}", self[(r, c)])?;
+        for row in self.iter_rows() {
+            for cell in row.iter() {
+                write!(f, "{}", cell)?;
             }
             writeln!(f)?;
         }
@@ -53,8 +65,8 @@ impl<T> Index<usize> for Grid<T> {
     type Output = [T];
 
     fn index(&self, index: usize) -> &Self::Output {
-        let start = index * self.shape.1;
-        let end = start + self.shape.1;
+        let start = self.to_1d((index, 0));
+        let end = self.to_1d((index + 1, 0));
         &self.cells[start..end]
     }
 }

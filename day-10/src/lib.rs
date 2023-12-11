@@ -39,7 +39,7 @@ pub type Ways = EnumSet<Way>;
 pub type Maze = Grid<Ways>;
 
 pub fn start(maze: &Maze) -> (usize, usize) {
-    maze.find(|&tile| tile == Ways::all()).expect("Start missing")
+    maze.position(|&tile| tile == Ways::all()).expect("Start missing")
 }
 
 pub fn ways_available(maze: &Maze, pos: (usize, usize)) -> Ways {
