@@ -1,15 +1,17 @@
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::{Display, Formatter};
 use std::io::{BufRead, BufReader, Read};
 use std::iter::{once, repeat};
 use std::ops::Index;
+use std::rc::Rc;
 use itertools::Itertools;
 
 use crate as aoc;
 
-#[derive(Default, Clone, PartialEq, Eq)]
+#[derive(Clone)]
 pub struct Grid<T> {
-    cells: Vec<T>,
     shape: (usize, usize),
+    cells: Vec<T>,
+    display_transform: Rc<dyn Fn(&T) -> u8>
 }
 
 impl<T> Grid<T> {
@@ -37,23 +39,20 @@ impl<T> Grid<T> {
     }
 }
 
-impl<T: Debug> Debug for Grid<T> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        for row in self.iter_rows() {
-            for cell in row.iter() {
-                write!(f, "{:?}", cell)?;
-            }
-            writeln!(f)?;
-        }
-        Ok(())
+impl<T: PartialEq> PartialEq for Grid<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.shape == other.shape && self.cells == other.cells
     }
 }
 
-impl<T: Display> Display for Grid<T> {
+impl<T: Eq> Eq for Grid<T> {}
+
+impl<T> Display for Grid<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let display = &self.display_transform;
         for row in self.iter_rows() {
             for cell in row.iter() {
-                write!(f, "{}", cell)?;
+                write!(f, "{}", display(cell) as char)?;
             }
             writeln!(f)?;
         }
@@ -79,11 +78,22 @@ impl<T> Index<(usize, usize)> for Grid<T> {
     }
 }
 
-pub fn read_grid<R, T, F>(reader: R, padding: Option<T>, mut transform: F) -> Result<Grid<T>, aoc::Error>
+pub fn read_grid<R, T>(reader: R, padding: Option<T>) -> Result<Grid<T>, aoc::Error>
+    where
+        R: Read,
+        T: Clone + From<u8> + Into<u8>
+{
+    read_grid_with_transform(reader, padding, T::from, |t| t.clone().into())
+}
+
+pub fn read_grid_with_transform<R, T, F, D>(
+    reader: R, padding: Option<T>,
+    mut transform: F, display_transform: D) -> Result<Grid<T>, aoc::Error>
     where
         R: Read,
         T: Clone,
-        F: FnMut(u8) -> T
+        F: FnMut(u8) -> T,
+        D: Fn(&T) -> u8 + 'static,
 {
     // Pad the grid edges with '.'' rows and columns for easier processing
     let mut cells: Vec<T> = vec![];
@@ -121,5 +131,5 @@ pub fn read_grid<R, T, F>(reader: R, padding: Option<T>, mut transform: F) -> Re
     let padding = cells.iter().take(expected_col_count).cloned().collect_vec();
     cells.extend(padding);
     let shape = (cells.len() / expected_col_count, expected_col_count);
-    Ok(Grid { cells, shape })
+    Ok(Grid { cells, shape, display_transform: Rc::new(display_transform) })
 }

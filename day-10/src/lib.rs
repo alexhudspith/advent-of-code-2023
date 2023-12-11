@@ -2,7 +2,7 @@ use std::io::Read;
 
 use enumset::{EnumSet, EnumSetType};
 
-use aoc::grid::{Grid, read_grid};
+use aoc::grid::{Grid, read_grid_with_transform};
 
 const BLANK: u8 = b'.';
 const START: u8 = b'S';
@@ -116,5 +116,5 @@ pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
 }
 
 pub fn read_maze<R: Read>(reader: R) -> Result<Maze, aoc::Error> {
-    read_grid(reader, Some(Ways::empty()), tile_to_ways)
+    read_grid_with_transform(reader, Some(Ways::empty()), tile_to_ways, |&w| ways_to_tile(w))
 }

@@ -1,4 +1,3 @@
-use std::convert;
 use std::io::Read;
 
 use itertools::Itertools;
@@ -54,5 +53,5 @@ pub fn find_in_frame<F>(grid: &Schematic, mut predicate: F, col_span: ColSpan) -
 }
 
 pub fn read_schematic<R: Read>(reader: R) -> Result<Schematic, aoc::Error> {
-    read_grid(reader, Some(BLANK), convert::identity)
+    read_grid(reader, Some(BLANK))
 }
