@@ -77,10 +77,7 @@ fn manhattan_distance((r1, c1): (usize, usize), (r2, c2): (usize, usize)) -> usi
 
 fn run(image: &Image, expansion_factor: usize) -> usize {
     let image = image.expanded(expansion_factor);
-    let first = image.galaxies.iter();
-    let second = image.galaxies.iter();
-    first.cartesian_product(second)
-        .filter(|(a, b)| b > a)
+    image.galaxies.iter().tuple_combinations::<(_, _)>()
         .map(|(&a, &b)| manhattan_distance(a, b))
         .sum()
 }
