@@ -3,6 +3,7 @@ use std::io::{BufRead, BufReader, Read, Seek};
 use std::iter::repeat;
 
 use itertools::Itertools;
+use aoc::TupleSumExt;
 
 use crate::cache::Cache;
 
@@ -12,10 +13,10 @@ mod cache;
 type uint = usize;
 type Memo = Cache<(uint, uint, uint), uint>;
 
-fn calc(vents: &[u8], groups: &[uint], group_usage: uint, memo: &mut Memo) -> (uint, usize) {
+fn solve(vents: &[u8], groups: &[uint], group_usage: uint, memo: &mut Memo) -> (uint, usize) {
     if vents.is_empty() {
         // At the end: a solution exists only if all groups are exhausted
-        let solutions = if groups.is_empty() && group_usage == 0 { 1 } else { 0 };
+        let solutions = if groups.is_empty() { 1 } else { 0 };
         return (solutions, 1)
     }
 
@@ -25,36 +26,32 @@ fn calc(vents: &[u8], groups: &[uint], group_usage: uint, memo: &mut Memo) -> (u
         return (value, calc_count);
     }
 
-    let alternatives = if vents[0] == b'?' {
-        [Some(b'.'), Some(b'#')]
-    } else {
-        [Some(vents[0]), None]
+    let alternatives = match vents[0] {
+        b'?' => &[b'.', b'#'],
+        _ => &vents[0..1]
     };
 
     let group_free = !groups.is_empty() && group_usage < groups[0];
-    let mut solutions = 0;
-    let mut calc_count = 1;
-    for vent in alternatives.into_iter().flatten() {
-        let (s, c) = match (vent, group_free, group_usage) {
+    let (solutions, calc_count) = alternatives.iter().map(|&vent| {
+        match (vent, group_free, group_usage) {
             (b'#', true, _) => {
                 // Current group has space. Consume from it.
-                calc(&vents[1..], groups, group_usage + 1, memo)
+                solve(&vents[1..], groups, group_usage + 1, memo)
             },
             (b'.', _, 0) => {
                 // No groups left; or current group is not yet used. Stay on it.
-                calc(&vents[1..], groups, 0, memo)
+                solve(&vents[1..], groups, 0, memo)
             },
             (b'.', false, _) => {
-                // Current group exists, and is both used & exhausted. Move to next group.
-                calc(&vents[1..], &groups[1..], 0, memo)
+                // Current group exists but is exhausted. Move to next group.
+                solve(&vents[1..], &groups[1..], 0, memo)
             }
             (_, _, _) => (0, 0),
-        };
+        }
+    })
+    .tuple_sum();
 
-        solutions += s;
-        calc_count += c;
-    }
-
+    let calc_count = calc_count + 1;
     memo.insert(key, solutions, calc_count);
     (solutions, calc_count)
 }
@@ -72,8 +69,8 @@ fn run<R: Read>(input: R, repeats: usize) -> Result<uint, aoc::Error> {
         let unfolded_vents = repeat(vents).take(repeats).join("?") + ".";
         let unfolded_groups = repeat(groups).take(repeats).flatten().collect_vec();
 
-        let mut memo = Cache::new();
-        let (solutions, _) = calc(unfolded_vents.as_bytes(), &unfolded_groups, 0, &mut memo);
+        let mut memo = Memo::new();
+        let (solutions, _) = solve(unfolded_vents.as_bytes(), &unfolded_groups, 0, &mut memo);
         // eprintln!("{:?}", memo.stats());
         total += solutions;
     }

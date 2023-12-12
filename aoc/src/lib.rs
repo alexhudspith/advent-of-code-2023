@@ -9,6 +9,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::{env, fs, io};
 use std::mem::MaybeUninit;
 use std::num::ParseIntError;
+use std::ops::Add;
 use std::panic::panic_any;
 use std::path::PathBuf;
 use std::str::{FromStr, Utf8Error};
@@ -164,3 +165,54 @@ impl<const N: usize, I: Iterator> CollectArray<N> for I {
         }
     }
 }
+
+pub trait TupleSum: Sized {
+    fn tuple_sum<I: Iterator<Item=Self>>(iter: I) -> Self;
+}
+
+impl<X> TupleSum for (X,)
+    where
+        X: Add<Output=X> + Default,
+{
+    fn tuple_sum<I: Iterator<Item=Self>>(iter: I) -> Self {
+        iter.fold((X::default(),), |(x1,), (x2,)|
+            (x1 + x2,)
+        )
+    }
+}
+
+impl<X, Y> TupleSum for (X, Y)
+    where
+        X: Add<Output=X> + Default,
+        Y: Add<Output=Y> + Default,
+{
+    fn tuple_sum<I: Iterator<Item=Self>>(iter: I) -> Self {
+        iter.fold((X::default(), Y::default()), |(x1, y1), (x2, y2)|
+            (x1 + x2, y1 + y2)
+        )
+    }
+}
+
+impl<X, Y, Z> TupleSum for (X, Y, Z)
+    where
+        X: Add<Output=X> + Default,
+        Y: Add<Output=Y> + Default,
+        Z: Add<Output=Z> + Default,
+{
+    fn tuple_sum<I: Iterator<Item=Self>>(iter: I) -> Self {
+        iter.fold((X::default(), Y::default(), Z::default()), |(x1, y1, z1), (x2, y2, z2)|
+            (x1 + x2, y1 + y2, z1 + z2)
+        )
+    }
+}
+
+pub trait TupleSumExt<T: TupleSum>: Iterator<Item=T> {
+    fn tuple_sum(self) -> Self::Item
+        where
+            Self: Sized
+    {
+        TupleSum::tuple_sum(self)
+    }
+}
+
+impl<T: TupleSum, I: Iterator<Item=T>> TupleSumExt<T> for I {}
