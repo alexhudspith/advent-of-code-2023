@@ -27,10 +27,11 @@ fn run<R: Read>(input: R, require_smudge: bool) -> Result<usize, aoc::Error> {
 
         // eprintln!("{}", &grid);
         total += solve(&grid, Axis::Row, require_smudge)
-            .map_or_else(||
-                solve(&grid, Axis::Column, require_smudge).unwrap_or(0),
-                |r| 100 * r,
-            );
+            .map_or_else(
+                || solve(&grid, Axis::Column, require_smudge),
+                |r| Some(100 * r),
+            )
+            .unwrap_or(0);
     }
 
     Ok(total)
