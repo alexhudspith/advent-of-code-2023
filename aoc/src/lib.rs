@@ -28,6 +28,8 @@ pub enum Error {
     ParseDataError(ParseDataError),
     ParseIntError(ParseIntError),
     Utf8Error(Utf8Error),
+    // When not unexpected
+    EndOfFile,
 }
 
 impl Display for Error {

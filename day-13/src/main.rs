@@ -16,10 +16,11 @@ fn run<R: Read>(input: R, require_smudge: bool) -> Result<usize, aoc::Error> {
     let mut reader = BufReader::new(input);
     let mut total = 0;
     loop {
-        let grid: Grid = read_grid_ascii(&mut reader, None)?;
-        if grid.is_empty() {
-            break;
-        }
+        let grid = match read_grid_ascii(&mut reader, None) {
+            Ok(grid) => grid,
+            Err(aoc::Error::EndOfFile) => break,
+            Err(e) => return Err(e),
+        };
 
         // eprintln!("{}", &grid);
         total += solve(&grid, Axis::Row, require_smudge)

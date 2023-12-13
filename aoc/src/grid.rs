@@ -302,18 +302,17 @@ pub fn read_grid_with_transform<R, T, F, D>(
         }
     }
 
-    if expected_col_count != 0 && padding_value.is_some() {
+    if expected_col_count == 0 {
+        return Err(aoc::Error::EndOfFile);
+    }
+
+    if padding_value.is_some() {
         // Clone first row of padding
         let padding = cells.iter().take(expected_col_count).cloned().collect_vec();
         cells.extend(padding);
     }
 
-    let shape = if expected_col_count != 0 {
-        (cells.len() / expected_col_count, expected_col_count)
-    } else {
-        (0, 0)
-    };
-
+    let shape = (cells.len() / expected_col_count, expected_col_count);
     cells.shrink_to_fit();
     Ok(Grid { cells, shape, debug_fmt: Rc::new(debug_fmt) })
 }
