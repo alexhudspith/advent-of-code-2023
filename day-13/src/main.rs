@@ -7,13 +7,9 @@ use aoc::grid::{Axis, read_grid};
 type Grid = aoc::grid::Grid<u8>;
 
 fn solve(grid: &Grid, axis: Axis, require_smudge: bool) -> Option<usize> {
-    for i in 0..grid.len(axis) - 1 {
-        if is_reflection(grid, axis, i, require_smudge) {
-            return Some(i + 1);
-        }
-    }
-
-    None
+    (0..grid.len(axis) - 1).filter_map(|i| {
+        is_reflection(grid, axis, i, require_smudge).then_some(i + 1)
+    }).next()
 }
 
 fn run<R: Read>(input: R, require_smudge: bool) -> Result<usize, aoc::Error> {
@@ -47,12 +43,15 @@ fn is_reflection(grid: &Grid, axis: Axis, reflect_ix: usize, require_smudge: boo
     for offset in 1..offset_top {
         let line1 = grid.get(axis, reflect_ix + offset);
         let line2 = grid.get(axis, reflect_ix + 1 - offset);
-        for (&a, &b) in itertools::zip_eq(line1, line2) {
-            if a != b {
-                if !require_smudge || has_diff {
-                    return false;
-                }
-                has_diff = true;
+        let diffs = itertools::zip_eq(line1, line2)
+            .filter(|(a, b)| a != b)
+            .take(2)
+            .count();
+
+        if diffs != 0 {
+            has_diff = true;
+            if diffs > 1 || !require_smudge {
+                return false;
             }
         }
     }
