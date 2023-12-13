@@ -10,7 +10,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::{env, fs, io};
 use std::mem::MaybeUninit;
 use std::num::ParseIntError;
-use std::ops::Add;
+use std::ops::{Add, AddAssign};
 use std::panic::panic_any;
 use std::path::PathBuf;
 use std::str::{FromStr, Utf8Error};
@@ -219,3 +219,22 @@ pub trait TupleSumExt<T: TupleSum>: Iterator<Item=T> {
 }
 
 impl<T: TupleSum, I: Iterator<Item=T>> TupleSumExt<T> for I {}
+
+
+pub trait CumulativeExt<T>: Iterator<Item=T>
+    where T: AddAssign + Copy + Default
+{
+    fn cumulative_sum(&mut self) -> impl Iterator<Item=T> {
+        self.scan(T::default(), |acc, v| {
+            *acc += v;
+            Some(*acc)
+        })
+    }
+}
+
+impl<T, I> CumulativeExt<T> for I
+    where
+        T: AddAssign + Copy + Default,
+        I: Iterator<Item=T>
+{
+}

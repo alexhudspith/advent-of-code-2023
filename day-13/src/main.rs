@@ -1,14 +1,17 @@
-use std::cmp::min;
 use std::fs::File;
 use std::io::{BufReader, Read, Seek};
+use itertools::Itertools;
+use aoc::CumulativeExt;
 
 use aoc::grid::{Axis, read_grid_ascii};
 
 type Grid = aoc::grid::Grid<u8>;
 
 fn solve(grid: &Grid, axis: Axis, require_smudge: bool) -> Option<usize> {
+    let diffs_required = if require_smudge { 1 } else { 0 };
+
     (0..grid.len(axis) - 1).filter_map(|i| {
-        is_reflection(grid, axis, i, require_smudge).then_some(i + 1)
+        is_reflection(grid, axis, i, diffs_required).then_some(i + 1)
     }).next()
 }
 
@@ -34,30 +37,24 @@ fn run<R: Read>(input: R, require_smudge: bool) -> Result<usize, aoc::Error> {
     Ok(total)
 }
 
-fn is_reflection(grid: &Grid, axis: Axis, reflect_ix: usize, require_smudge: bool) -> bool {
-    let offset_top = min(grid.len(axis) - reflect_ix, reflect_ix + 2);
-    if offset_top <= 1 {
-        return false;
-    }
+fn is_reflection(grid: &Grid, axis: Axis, reflect_ix: usize, diffs_required: usize) -> bool {
+    let reverse = (0..=reflect_ix).rev().map(|i| grid.get(axis, i).copied());
+    let forward = (reflect_ix + 1..grid.len(axis)).map(|i| grid.get(axis, i).copied());
+    let diffs: usize = reverse.zip(forward)
+        .map(|(line1, line2)| diff_count(line1, line2, diffs_required + 1))
+        .cumulative_sum()
+        .take_while_inclusive(|&diffs| diffs <= diffs_required)
+        .last()
+        .expect("Expect at least 2 rows or columns");
 
-    let mut has_diff = false;
-    for offset in 1..offset_top {
-        let line1 = grid.get(axis, reflect_ix + offset);
-        let line2 = grid.get(axis, reflect_ix + 1 - offset);
-        let diffs = itertools::zip_eq(line1, line2)
-            .filter(|(a, b)| a != b)
-            .take(2)
-            .count();
+    diffs == diffs_required
+}
 
-        if diffs != 0 {
-            has_diff = true;
-            if diffs > 1 || !require_smudge {
-                return false;
-            }
-        }
-    }
-
-    require_smudge == has_diff
+fn diff_count<I: Iterator<Item=u8>>(line1: I, line2: I, max_diffs: usize) -> usize {
+    itertools::zip_eq(line1, line2)
+        .filter(|&(cell1, cell2)| cell1 != cell2)
+        .take(max_diffs)
+        .count()
 }
 
 fn main() -> Result<(), aoc::Error> {
