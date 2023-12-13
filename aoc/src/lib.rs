@@ -154,17 +154,16 @@ pub trait CollectArray<const N: usize> where Self: Iterator + Sized {
 
 impl<const N: usize, I: Iterator> CollectArray<N> for I {
     fn try_collect_array(mut self) -> Result<[Self::Item; N], &'static str> {
-        unsafe {
-            let mut result: [MaybeUninit<Self::Item>; N] = MaybeUninit::uninit_array();
-            for r in &mut result {
-                let next = self.next().ok_or("Two few items for array")?;
-                r.as_mut_ptr().write(next);
-            }
+        let mut result: [MaybeUninit<Self::Item>; N] = MaybeUninit::uninit_array();
+        for r in &mut result {
+            let next = self.next().ok_or("Two few items for array")?;
+            r.write(next);
+        }
 
-            match self.next() {
-                None => Ok(MaybeUninit::array_assume_init(result)),
-                Some(_) => Err("Too many items for array"),
-            }
+        match self.next() {
+            // Safety: All elements have been written by the above loop
+            None => Ok(unsafe { MaybeUninit::array_assume_init(result) }),
+            Some(_) => Err("Too many items for array"),
         }
     }
 }
