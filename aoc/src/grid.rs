@@ -153,16 +153,19 @@ pub fn read_grid<R, T>(reader: &mut R, padding: Option<T>) -> Result<Grid<T>, ao
     read_grid_with_transform(reader, padding, T::from, |t| t.clone().into() as char)
 }
 
+// Optionally pad the grid edges with `padding` rows and columns for easier processing
 pub fn read_grid_with_transform<R, T, F, D>(
-    reader: &mut R, padding: Option<T>,
-    mut transform: F, display_transform: D) -> Result<Grid<T>, aoc::Error>
+    reader: &mut R,
+    padding_value: Option<T>,
+    mut transform: F,
+    display_transform: D
+) -> Result<Grid<T>, aoc::Error>
     where
         R: BufRead,
         T: Clone,
         F: FnMut(u8) -> T,
         D: Fn(&T) -> char + 'static,
 {
-    // Pad the grid edges with '.'' rows and columns for easier processing
     let mut cells: Vec<T> = vec![];
     let mut expected_col_count = 0;
     for (r, line) in reader.lines().enumerate() {
@@ -177,13 +180,12 @@ pub fn read_grid_with_transform<R, T, F, D>(
             }
         }
 
-        let col_count = line.len() + padding.as_ref().map_or(0, |_| 2);
+        let col_count = line.len() + padding_value.as_ref().map_or(0, |_| 2);
         if cells.is_empty() {
-            // First row all padding
             expected_col_count = col_count;
-            if let Some(padding) = padding.clone() {
-                let padding = repeat(padding).take(col_count);
-                cells.extend(padding);
+            if let Some(padding) = padding_value.clone() {
+                // First row all padding
+                cells.extend(repeat(padding).take(col_count));
             }
         }
 
@@ -191,19 +193,17 @@ pub fn read_grid_with_transform<R, T, F, D>(
             return Err(format!("Ragged line at line {}", r + 1).into());
         }
 
-        // First/last column padding
-        if let Some(padding) = padding.clone() {
-            cells.extend(
-                once(padding.clone())
-                .chain(line.bytes().map(&mut transform))
-                .chain(once(padding))
-            );
+        if let Some(padding) = padding_value.clone() {
+            // First/last column padding
+            cells.push(padding.clone());
+            cells.extend(line.bytes().map(&mut transform));
+            cells.push(padding.clone());
         } else {
             cells.extend(line.bytes().map(&mut transform));
         }
     }
 
-    if expected_col_count != 0 && padding.is_some() {
+    if expected_col_count != 0 && padding_value.is_some() {
         // Clone first row of padding
         let padding = cells.iter().take(expected_col_count).cloned().collect_vec();
         cells.extend(padding);
