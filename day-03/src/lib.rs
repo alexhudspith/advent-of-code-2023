@@ -1,4 +1,4 @@
-use std::io::Read;
+use std::io::{BufReader, Read};
 
 use itertools::Itertools;
 
@@ -52,6 +52,7 @@ pub fn find_in_frame<F>(grid: &Schematic, mut predicate: F, col_span: ColSpan) -
     frame(col_span).find(|&(r, c)| predicate(grid[r][c]))
 }
 
-pub fn read_schematic<R: Read>(reader: R) -> Result<Schematic, aoc::Error> {
-    read_grid(reader, Some(BLANK))
+pub fn read_schematic<R: Read>(input: R) -> Result<Schematic, aoc::Error> {
+    let mut reader = BufReader::new(input);
+    read_grid(&mut reader, Some(BLANK))
 }

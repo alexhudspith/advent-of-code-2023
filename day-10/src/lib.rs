@@ -1,4 +1,4 @@
-use std::io::Read;
+use std::io::{BufReader, Read};
 
 use enumset::{EnumSet, EnumSetType};
 
@@ -131,6 +131,7 @@ pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
     Ok(main_loop)
 }
 
-pub fn read_maze<R: Read>(reader: R) -> Result<Maze, aoc::Error> {
-    read_grid_with_transform(reader, Some(Ways::empty()), tile_to_ways, |&w| ways_to_graphic(w))
+pub fn read_maze<R: Read>(input: R) -> Result<Maze, aoc::Error> {
+    let mut reader = BufReader::new(input);
+    read_grid_with_transform(&mut reader, Some(Ways::empty()), tile_to_ways, |&w| ways_to_graphic(w))
 }
