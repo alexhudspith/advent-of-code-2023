@@ -1,3 +1,4 @@
+use std::fmt;
 use std::io::{BufReader, Read};
 
 use enumset::{EnumSet, EnumSetType};
@@ -102,6 +103,11 @@ fn ways_to_graphic(ways: Ways) -> char {
         .1
 }
 
+fn ways_to_graphic_line(ways: &[Ways], f: &mut fmt::Formatter) -> fmt::Result {
+    let s: String = ways.iter().copied().map(ways_to_graphic).collect();
+    write!(f, "{:?}", s)
+}
+
 pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
     let mut main_loop = Vec::new();
     let start = start(maze);
@@ -133,5 +139,5 @@ pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
 
 pub fn read_maze<R: Read>(input: R) -> Result<Maze, aoc::Error> {
     let mut reader = BufReader::new(input);
-    read_grid_with_transform(&mut reader, Some(Ways::empty()), tile_to_ways, |&w| ways_to_graphic(w))
+    read_grid_with_transform(&mut reader, Some(Ways::empty()), tile_to_ways, ways_to_graphic_line)
 }

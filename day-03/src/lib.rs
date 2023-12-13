@@ -2,7 +2,7 @@ use std::io::{BufReader, Read};
 
 use itertools::Itertools;
 
-use aoc::grid::{Grid, read_grid};
+use aoc::grid::{Grid, read_grid_ascii};
 
 const BLANK: u8 = b'.';
 const GEAR: u8 = b'*';
@@ -54,5 +54,5 @@ pub fn find_in_frame<F>(grid: &Schematic, mut predicate: F, col_span: ColSpan) -
 
 pub fn read_schematic<R: Read>(input: R) -> Result<Schematic, aoc::Error> {
     let mut reader = BufReader::new(input);
-    read_grid(&mut reader, Some(BLANK))
+    read_grid_ascii(&mut reader, Some(BLANK))
 }

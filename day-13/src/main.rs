@@ -2,7 +2,7 @@ use std::cmp::min;
 use std::fs::File;
 use std::io::{BufReader, Read, Seek};
 
-use aoc::grid::{Axis, read_grid};
+use aoc::grid::{Axis, read_grid_ascii};
 
 type Grid = aoc::grid::Grid<u8>;
 
@@ -16,7 +16,7 @@ fn run<R: Read>(input: R, require_smudge: bool) -> Result<usize, aoc::Error> {
     let mut reader = BufReader::new(input);
     let mut total = 0;
     loop {
-        let grid: Grid = read_grid(&mut reader, None)?;
+        let grid: Grid = read_grid_ascii(&mut reader, None)?;
         if grid.is_empty() {
             break;
         }
