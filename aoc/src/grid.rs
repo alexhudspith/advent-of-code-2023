@@ -4,6 +4,7 @@ use std::borrow::Borrow;
 use std::fmt::{Debug, Display, Formatter};
 use std::io::BufRead;
 use std::{fmt, iter};
+use std::hash::{Hash, Hasher};
 use std::iter::repeat;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
@@ -24,7 +25,7 @@ impl Axis {
         EnumSet::all()
     }
 
-    pub fn other(&self) -> Self {
+    pub const fn other(&self) -> Self {
         match self {
             Axis::Row => Axis::Column,
             Axis::Column => Axis::Row,
@@ -54,6 +55,13 @@ pub struct Grid<T=u8> {
     shape: (usize, usize),
     cells: Vec<T>,
     debug_fmt: Rc<RowFormatter<T>>,
+}
+
+impl<T: Hash> Hash for Grid<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.shape.hash(state);
+        self.cells.hash(state);
+    }
 }
 
 impl Grid<u8> {
@@ -89,22 +97,22 @@ impl<T> Grid<T> {
         }
     }
 
-    pub fn shape(&self) -> (usize, usize) {
+    pub const fn shape(&self) -> (usize, usize) {
         self.shape
     }
 
-    pub fn len(&self, axis: Axis) -> usize {
+    pub const fn len(&self, axis: Axis) -> usize {
         match axis {
             Axis::Row => self.shape.0,
             Axis::Column => self.shape.1,
         }
     }
 
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.shape.0 == 0 || self.shape.1 == 0
     }
 
-    pub fn get(&self, axis: Axis, i: usize) -> impl Iterator<Item=&T> + '_ {
+    pub fn get(&self, axis: Axis, i: usize) -> impl DoubleEndedIterator<Item=&T> + ExactSizeIterator + '_ {
         (0..self.len(axis.other())).map(move |j| {
             match axis {
                 Axis::Row => &self[i][j],
@@ -113,28 +121,19 @@ impl<T> Grid<T> {
         })
     }
 
-    pub fn iter(&self, axis: Axis) -> impl Iterator<Item=impl Iterator<Item=&T>> + '_ {
-        let mut i = 0;
-        iter::from_fn(move || {
-            if i == self.len(axis) {
-                return None;
-            }
-
-            let iter = self.get(axis, i);
-            i += 1;
-            Some(iter)
-        })
+    pub fn iter(&self, major: Axis) -> impl DoubleEndedIterator<Item=impl DoubleEndedIterator<Item=&T> + ExactSizeIterator> + ExactSizeIterator + '_ {
+        (0..self.len(major)).map(move |i| self.get(major, i))
     }
 
-    pub fn iter_rows(&self) -> impl Iterator<Item=&[T]> + '_ {
+    pub fn iter_rows(&self) -> impl DoubleEndedIterator<Item=&[T]> + ExactSizeIterator + '_ {
         self.cells.chunks(self.shape.1)
     }
 
-    fn to_1d(&self, (r, c): (usize, usize)) -> usize {
+    const fn to_1d(&self, (r, c): (usize, usize)) -> usize {
         r * self.shape.1 + c
     }
 
-    fn to_2d(&self, i: usize) -> (usize, usize) {
+    const fn to_2d(&self, i: usize) -> (usize, usize) {
         (i / self.shape.1, i % self.shape.1)
     }
 
@@ -406,5 +405,44 @@ mod tests {
 
         let actual = g.into_transpose();
         assert_eq!(actual, expected);
+    }
+}
+
+#[derive(Debug, EnumSetType)]
+pub enum Way {
+    Up,
+    Right,
+    Down,
+    Left,
+}
+
+impl Way {
+    pub const fn flipped(&self) -> Self {
+        match self {
+            Way::Up => Way::Down,
+            Way::Right => Way::Left,
+            Way::Down => Way::Up,
+            Way::Left => Way::Right,
+        }
+    }
+
+    pub const fn step(&self, pos: (usize, usize)) -> (usize, usize) {
+        self.steps(pos, 1)
+    }
+
+    pub const fn steps(&self, pos: (usize, usize), steps: usize) -> (usize, usize) {
+        match self {
+            Way::Up => (pos.0 - steps, pos.1),
+            Way::Right => (pos.0, pos.1 + steps),
+            Way::Down => (pos.0 + steps, pos.1),
+            Way::Left => (pos.0, pos.1 - steps),
+        }
+    }
+
+    pub const fn axis_changing(&self) -> Axis {
+        match self {
+            Way::Up | Way::Down => Axis::Row,
+            Way::Left | Way::Right => Axis::Column,
+        }
     }
 }

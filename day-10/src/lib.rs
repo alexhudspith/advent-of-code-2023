@@ -1,40 +1,13 @@
 use std::fmt;
 use std::io::{BufReader, Read};
 
-use enumset::{EnumSet, EnumSetType};
+use enumset::EnumSet;
 
 use aoc::grid::{Grid, read_grid_with_transform};
+pub use aoc::grid::Way;
 
 const BLANK: u8 = b'.';
 const START: u8 = b'S';
-
-#[derive(Debug, EnumSetType)]
-pub enum Way {
-    Up,
-    Right,
-    Down,
-    Left,
-}
-
-impl Way {
-    pub fn flipped(&self) -> Self {
-        match self {
-            Way::Up => Way::Down,
-            Way::Right => Way::Left,
-            Way::Down => Way::Up,
-            Way::Left => Way::Right,
-        }
-    }
-
-    pub fn step(&self, pos: (usize, usize)) -> (usize, usize) {
-        match self {
-            Way::Up => (pos.0 - 1, pos.1),
-            Way::Right => (pos.0, pos.1 + 1),
-            Way::Down => (pos.0 + 1, pos.1),
-            Way::Left => (pos.0, pos.1 - 1),
-        }
-    }
-}
 
 pub type Ways = EnumSet<Way>;
 pub type Maze = Grid<Ways>;

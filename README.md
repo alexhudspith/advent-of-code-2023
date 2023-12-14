@@ -17,6 +17,7 @@ Solutions for [Advent of Code 2023][aoc], written in Rust.
 |  11 | Cosmic Expansion   | Expand space between galaxies        | Sparse 2D grid with HashSet                         |      1 ms |
 |  12 | Hot Springs        | Damaged spring pattern matching      | Recursive DP, fast FxHashMap memoization            |     43 ms |
 |  13 | Point of Incidence | Find reflections in landscape        | Simple comparisons with short-circuiting            |      2 ms |
+|  14 | Point of Incidence | Roll rocks around a grid             |                                                     |     55 ms |
 
 *Rough wall clock time on my PC, all single-threaded (`--release` mode, directly executed, not via Cargo)
 
