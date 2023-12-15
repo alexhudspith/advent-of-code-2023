@@ -13,27 +13,14 @@ fn iter_grid(grid: &Grid, way: Way) -> impl Iterator<Item=(usize, usize)> {
     let row_iter = 0..grid.len(Axis::Row);
     let col_iter = 0..grid.len(Axis::Column);
 
-    // Always yields (row, col). Access patterns for data in row-major order
     let result: Box<dyn Iterator<Item=_>> = match way {
-        // (2, 2) (2, 1) (2, 0) / (1, 2) (1, 1) (1, 0) / (0, 2) (0, 1) (0, 0)
-        // Access pattern: 8 7 6 5 4 3 2 1 0
-        Way::Up => Box::new(
+        // Bottom-right to top-left, reverse direction
+        Way::Up | Way::Left => Box::new(
             row_iter.rev().cartesian_product(col_iter.rev())
         ),
-        // (2, 2) (1, 2) (0, 2) / (2, 1) (1, 1) (0, 1) / (2, 0) (1, 0) (0, 0)
-        // Access pattern: 8 5 2 7 4 1 6 3 0
-        Way::Left => Box::new(
-            col_iter.rev().cartesian_product(row_iter.rev()).map(|(i, j)| (j, i))
-        ),
-        // (0, 0) (0, 1) (0, 2) / (1, 0) (1, 1) (1, 2) / (2, 0) (2, 1) (2, 2)
-        // Access pattern: 0 1 2 3 4 5 6 7 8
-        Way::Down => Box::new(
+        // Top-left to bottom-right, forward direction
+        Way::Down | Way::Right => Box::new(
             row_iter.cartesian_product(col_iter)
-        ),
-        // (0, 0) (1, 0) (2, 0) / (0, 1) (1, 1) (2, 1) / (0, 2) (1, 2) (2, 2)
-        // Access pattern: 0 3 6 1 4 7 2 5 8
-        Way::Right => Box::new(
-            col_iter.cartesian_product(row_iter).map(|(i, j)| (j, i))
         ),
     };
 
