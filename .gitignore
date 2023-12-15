@@ -6,4 +6,4 @@ input.txt
 day-*.txt
 rustc-ice-*
 flamegraph.svg
-perf.data
+perf.data*
