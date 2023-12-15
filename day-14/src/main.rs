@@ -55,24 +55,11 @@ fn tilt(grid: &mut Grid, way: Way) {
 
 fn calc_load(grid: &Grid, way: Way) -> usize {
     let axis = way.axis_changing();
-    let mut load = vec![0; grid.len(axis.other())];
-    let mut total_load = 0;
 
-    for rc in iter_grid(grid, way) {
-        let (i, j) = if axis == Axis::Row { rc } else { (rc.1, rc.0) };
-        match grid[rc] {
-            b'O' => {
-                load[j] += grid.len(axis) - i - 1;
-            },
-            b'#' => {
-                total_load += load[j];
-                load[j] = 0;
-            },
-            _ => {},
-        }
-    }
-
-    total_load
+    iter_grid(grid, way).map(|rc| {
+        let i = if axis == Axis::Row { rc.0 } else { rc.1 };
+        if grid[rc] == b'O' { grid.len(axis) - i - 1 } else { 0 }
+    }).sum()
 }
 
 pub fn hash<T: Hash>(value: &T) -> u64 {
