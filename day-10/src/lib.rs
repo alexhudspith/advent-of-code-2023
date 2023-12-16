@@ -1,15 +1,12 @@
 use std::fmt;
 use std::io::{BufReader, Read};
 
-use enumset::EnumSet;
-
-use aoc::grid::{Grid, read_grid_with_transform};
-pub use aoc::grid::Way;
+use aoc::grid::{Way, Ways, Grid, read_grid_with_transform};
+use aoc::infallible;
 
 const BLANK: u8 = b'.';
 const START: u8 = b'S';
 
-pub type Ways = EnumSet<Way>;
 pub type Maze = Grid<Ways>;
 
 pub fn start(maze: &Maze) -> (usize, usize) {
@@ -112,5 +109,5 @@ pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
 
 pub fn read_maze<R: Read>(input: R) -> Result<Maze, aoc::Error> {
     let mut reader = BufReader::new(input);
-    read_grid_with_transform(&mut reader, Some(Ways::empty()), tile_to_ways, ways_to_graphic_line)
+    read_grid_with_transform(&mut reader, Some(Ways::empty()), infallible(tile_to_ways), ways_to_graphic_line)
 }

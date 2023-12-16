@@ -8,6 +8,7 @@ use std::borrow::Borrow;
 use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter};
 use std::{env, fs, io};
+use std::convert::Infallible;
 use std::mem::MaybeUninit;
 use std::num::ParseIntError;
 use std::ops::{Add, AddAssign};
@@ -74,6 +75,24 @@ impl From<Utf8Error> for Error {
     fn from(value: Utf8Error) -> Self {
         Self::Utf8Error(value)
     }
+}
+
+impl From<u8> for Error {
+    fn from(value: u8) -> Self {
+        Self::ParseDataError(ParseDataError { reason: format!("{value}") })
+    }
+}
+
+impl From<Infallible> for Error {
+    fn from(_: Infallible) -> Self {
+        unreachable!()
+    }
+}
+
+pub fn infallible<F, T, R>(mut f: F) -> impl FnMut(T) -> Result<R, Infallible>
+    where F: FnMut(T) -> R
+{
+    move |t| Ok::<_, Infallible>(f(t))
 }
 
 #[cfg(feature = "nom")]

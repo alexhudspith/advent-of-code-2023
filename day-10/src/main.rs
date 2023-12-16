@@ -1,7 +1,8 @@
 use std::collections::HashSet;
 use std::fs::File;
+use aoc::grid::{Way, Ways};
 
-use day_10::{Maze, Way, Ways, read_maze, ways_available, maze_pipe_loop};
+use day_10::{Maze, read_maze, ways_available, maze_pipe_loop};
 
 // Answer: 7107
 pub fn part1(maze: &Maze) -> Result<usize, aoc::Error> {

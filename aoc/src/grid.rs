@@ -14,6 +14,7 @@ use itertools::Itertools;
 use enumset::{EnumSet, EnumSetType};
 
 use crate as aoc;
+use aoc::infallible;
 
 #[derive(Debug, EnumSetType)]
 pub enum Axis {
@@ -88,7 +89,7 @@ impl Grid<char> {
 }
 
 impl<T> Grid<T> {
-    pub fn new(rows: usize, cols: usize) -> Self where T: Default + 'static, [T]: Debug {
+    pub fn new((rows, cols): (usize, usize)) -> Self where T: Default + 'static, [T]: Debug {
         let cells = iter::repeat_with(T::default).take(rows * cols).collect();
         Self {
             shape: (rows, cols),
@@ -248,11 +249,21 @@ impl<T, R> From<&[R]> for Grid<T>
 pub fn read_grid_ascii<R>(reader: &mut R, padding: Option<u8>) -> Result<Grid<u8>, aoc::Error>
     where R: BufRead
 {
-    read_grid_with_transform(reader, padding, std::convert::identity, ascii_to_str)
+    read_grid_with_transform(reader, padding, infallible(std::convert::identity), ascii_to_str)
+}
+
+pub fn read_grid<R, T>(reader: &mut R, padding: Option<T>) -> Result<Grid<T>, aoc::Error>
+    where
+        R: BufRead,
+        T: Clone + TryFrom<u8> + 'static,
+        [T]: Debug,
+        aoc::Error: From<T::Error>,
+{
+    read_grid_with_transform(reader, padding, T::try_from, debug_to_str)
 }
 
 // Optionally pad the grid edges with `padding` rows and columns for easier processing
-pub fn read_grid_with_transform<R, T, F, D>(
+pub fn read_grid_with_transform<R, T, E, F, D>(
     reader: &mut R,
     padding_value: Option<T>,
     mut transform: F,
@@ -261,7 +272,8 @@ pub fn read_grid_with_transform<R, T, F, D>(
     where
         R: BufRead,
         T: Clone,
-        F: FnMut(u8) -> T,
+        F: FnMut(u8) -> Result<T, E>,
+        aoc::Error: From<E>,
         D: 'static + Fn(&[T], &mut Formatter<'_>) -> fmt::Result,
 {
     let mut cells: Vec<T> = vec![];
@@ -294,10 +306,10 @@ pub fn read_grid_with_transform<R, T, F, D>(
         if let Some(padding) = padding_value.clone() {
             // First/last column padding
             cells.push(padding.clone());
-            cells.extend(line.bytes().map(&mut transform));
+            line.bytes().map(&mut transform).process_results(|ts| cells.extend(ts))?;
             cells.push(padding.clone());
         } else {
-            cells.extend(line.bytes().map(&mut transform));
+            line.bytes().map(&mut transform).process_results(|ts| cells.extend(ts))?;
         }
     }
 
@@ -322,13 +334,13 @@ mod tests {
 
     #[test]
     fn transpose_row() {
-        let mut g = Grid::new(1, 4);
+        let mut g = Grid::new((1, 4));
         g[0][0] = 1;
         g[0][1] = 2;
         g[0][2] = 3;
         g[0][3] = 4;
 
-        let mut expected = Grid::new(4, 1);
+        let mut expected = Grid::new((4, 1));
         expected[0][0] = 1;
         expected[1][0] = 2;
         expected[2][0] = 3;
@@ -408,6 +420,8 @@ mod tests {
     }
 }
 
+pub type Ways = EnumSet<Way>;
+
 #[derive(Debug, EnumSetType)]
 pub enum Way {
     Up,
@@ -443,6 +457,42 @@ impl Way {
         match self {
             Way::Up | Way::Down => Axis::Row,
             Way::Left | Way::Right => Axis::Column,
+        }
+    }
+
+    pub const fn rotate_cw(&self) -> Self {
+        match self {
+            Way::Up => Way::Right,
+            Way::Right => Way::Down,
+            Way::Down => Way::Left,
+            Way::Left => Way::Up,
+        }
+    }
+
+    pub const fn rotate_ccw(&self) -> Self {
+        match self {
+            Way::Up => Way::Left,
+            Way::Right => Way::Up,
+            Way::Down => Way::Right,
+            Way::Left => Way::Down,
+        }
+    }
+
+    pub const fn mirror_45_pos(&self) -> Self {
+        match self {
+            Way::Up => Way::Right,
+            Way::Right => Way::Up,
+            Way::Down => Way::Left,
+            Way::Left => Way::Down,
+        }
+    }
+
+    pub const fn mirror_45_neg(&self) -> Self {
+        match self {
+            Way::Up => Way::Left,
+            Way::Right => Way::Down,
+            Way::Down => Way::Right,
+            Way::Left => Way::Up,
         }
     }
 }
