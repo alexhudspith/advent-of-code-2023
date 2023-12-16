@@ -1,8 +1,28 @@
 use std::fs::File;
 use std::io::{BufReader, Read, Seek};
+use enumset::{EnumSet, EnumSetType};
 use aoc::grid::{Grid, read_grid, Way, Ways};
 
 type Tiles = Grid<Tile>;
+
+#[derive(Debug, EnumSetType)]
+enum Pathway {
+    A, B
+}
+
+impl Pathway {
+    pub fn select(way: Way, a_ways: Ways) -> Self {
+        Self::from(a_ways.contains(way))
+    }
+}
+
+impl From<bool> for Pathway {
+    fn from(value: bool) -> Self {
+        if value { Self::A } else { Self::B }
+    }
+}
+
+type Pathways = EnumSet<Pathway>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -20,14 +40,19 @@ impl Tile {
         [Tile::Border, Tile::Blank, Tile::VSplit, Tile::HSplit, Tile::FwdMirror, Tile::BackMirror]
     }
 
-    pub fn ways_out(&self, way_in: Way) -> Ways {
+    pub fn ways_out(&self, way_in: Way) -> (Ways, Pathway) {
         match self {
-            Tile::Border => Ways::empty(),
-            Tile::VSplit if way_in.is_horizontal() => Way::verticals(),
-            Tile::HSplit if way_in.is_vertical() => Way::horizontals(),
-            Tile::FwdMirror => way_in.mirror_45_pos().into(),
-            Tile::BackMirror => way_in.mirror_45_neg().into(),
-            Tile::Blank | Tile::VSplit | Tile::HSplit => way_in.into(),
+            // A if beam splits, B if straight through
+            Tile::VSplit if way_in.is_horizontal() => (Way::verticals(), Pathway::A),
+            Tile::HSplit if way_in.is_vertical() => (Way::horizontals(), Pathway::A),
+            Tile::VSplit => (way_in.into(), Pathway::B),
+            Tile::HSplit => (way_in.into(), Pathway::B),
+            // A if hit top side, B if hit bottom side
+            Tile::FwdMirror => (way_in.mirror_45_pos().into(), Pathway::select(way_in, Way::Right | Way::Down)),
+            Tile::BackMirror => (way_in.mirror_45_neg().into(), Pathway::select(way_in, Way::Left | Way::Down)),
+            // A if runs vertical, B if runs horizontal
+            Tile::Blank => (way_in.into(), Pathway::from(way_in.is_vertical())),
+            Tile::Border => (Ways::empty(), Pathway::from(way_in.is_vertical())),
         }
     }
 }
@@ -45,32 +70,32 @@ impl TryFrom<u8> for Tile {
     }
 }
 
-fn energized(history: &Grid<Ways>) -> usize {
+fn energized(history: &Grid<Pathways>) -> usize {
     history.iter_rows()
         .flat_map(|row| row.iter())
-        .filter(|ways| !ways.is_empty())
+        .filter(|sides| !sides.is_empty())
         .count()
 }
 
 fn solve(tiles: &Tiles, pos: (usize, usize), way_in: Way) -> usize {
-    let mut history: Grid<Ways> = Grid::new(tiles.shape());
+    let mut history: Grid<Pathways> = Grid::new(tiles.shape());
     let mut stack = vec![];
     stack.push((pos, way_in));
 
     'stack:
     while let Some((mut pos, mut way_in)) = stack.pop() {
-        let mut ways_out = tiles[pos].ways_out(way_in);
+        let (mut ways_out, mut side) = tiles[pos].ways_out(way_in);
         while ways_out.len() == 1 {
             // Optimized path
-            if !history[pos].insert(way_in) {
+            if !history[pos].insert(side) {
                 continue 'stack;
             }
             way_in = ways_out.iter().next().unwrap();
             pos = way_in.step(pos);
-            ways_out = tiles[pos].ways_out(way_in);
+            (ways_out, side) = tiles[pos].ways_out(way_in);
         }
 
-        if ways_out.is_empty() || !history[pos].insert(way_in) {
+        if ways_out.is_empty() || !history[pos].insert(side) {
             continue;
         }
 
