@@ -17,24 +17,17 @@ enum Tile {
 
 impl Tile {
     pub const fn all() -> [Tile; 6] {
-        [
-            Tile::Border,
-            Tile::Blank,
-            Tile::VSplit,
-            Tile::HSplit,
-            Tile::Slash,
-            Tile::Backslash
-        ]
+        [Tile::Border, Tile::Blank, Tile::VSplit, Tile::HSplit, Tile::Slash, Tile::Backslash]
     }
 
     pub fn next_ways(&self, way: Way) -> Ways {
         match self {
             Tile::Border => Ways::empty(),
-            Tile::Blank => Ways::from(way),
-            Tile::VSplit => Way::Up | Way::Down,
-            Tile::HSplit => Way::Left | Way::Right,
-            Tile::Slash => Ways::from(way.mirror_45_pos()),
-            Tile::Backslash => Ways::from(way.mirror_45_neg()),
+            Tile::Blank => way.into(),
+            Tile::VSplit => if way.is_vertical() { way.into() } else { Way::verticals() },
+            Tile::HSplit => if way.is_horizontal() { way.into() } else { Way::horizontals() },
+            Tile::Slash => way.mirror_45_pos().into(),
+            Tile::Backslash => way.mirror_45_neg().into(),
         }
     }
 }

@@ -431,6 +431,18 @@ pub enum Way {
 }
 
 impl Way {
+    pub fn all() -> Ways {
+        Ways::all()
+    }
+
+    pub fn horizontals() -> Ways {
+        Way::Left | Way::Right
+    }
+
+    pub fn verticals() -> Ways {
+        Way::Up | Way::Down
+    }
+
     pub const fn flipped(&self) -> Self {
         match self {
             Way::Up => Way::Down,
@@ -438,6 +450,20 @@ impl Way {
             Way::Down => Way::Up,
             Way::Left => Way::Right,
         }
+    }
+
+    pub const fn is_horizontal(&self) -> bool {
+        // For constness...
+        match self {
+            Way::Up => false,
+            Way::Right => true,
+            Way::Down => false,
+            Way::Left => true,
+        }
+    }
+
+    pub const fn is_vertical(&self) -> bool {
+        !self.is_horizontal()
     }
 
     pub const fn step(&self, pos: (usize, usize)) -> (usize, usize) {
