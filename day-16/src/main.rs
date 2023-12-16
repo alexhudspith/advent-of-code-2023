@@ -11,23 +11,23 @@ enum Tile {
     Blank = b'.',
     VSplit = b'|',
     HSplit = b'-',
-    Slash = b'/',
-    Backslash = b'\\',
+    FwdMirror = b'/',
+    BackMirror = b'\\',
 }
 
 impl Tile {
     pub const fn all() -> [Tile; 6] {
-        [Tile::Border, Tile::Blank, Tile::VSplit, Tile::HSplit, Tile::Slash, Tile::Backslash]
+        [Tile::Border, Tile::Blank, Tile::VSplit, Tile::HSplit, Tile::FwdMirror, Tile::BackMirror]
     }
 
-    pub fn next_ways(&self, way: Way) -> Ways {
+    pub fn ways_out(&self, way_in: Way) -> Ways {
         match self {
             Tile::Border => Ways::empty(),
-            Tile::Blank => way.into(),
-            Tile::VSplit => if way.is_vertical() { way.into() } else { Way::verticals() },
-            Tile::HSplit => if way.is_horizontal() { way.into() } else { Way::horizontals() },
-            Tile::Slash => way.mirror_45_pos().into(),
-            Tile::Backslash => way.mirror_45_neg().into(),
+            Tile::VSplit if way_in.is_horizontal() => Way::verticals(),
+            Tile::HSplit if way_in.is_vertical() => Way::horizontals(),
+            Tile::FwdMirror => way_in.mirror_45_pos().into(),
+            Tile::BackMirror => way_in.mirror_45_neg().into(),
+            Tile::Blank | Tile::VSplit | Tile::HSplit => way_in.into(),
         }
     }
 }
@@ -52,30 +52,30 @@ fn energized(history: &Grid<Ways>) -> usize {
         .count()
 }
 
-fn solve(tiles: &Tiles, pos: (usize, usize), way: Way) -> usize {
+fn solve(tiles: &Tiles, pos: (usize, usize), way_in: Way) -> usize {
     let mut history: Grid<Ways> = Grid::new(tiles.shape());
     let mut stack = vec![];
-    stack.push((pos, way));
+    stack.push((pos, way_in));
 
     'stack:
-    while let Some((mut pos, mut way)) = stack.pop() {
-        let mut next_ways = tiles[pos].next_ways(way);
-        while next_ways.len() == 1 {
+    while let Some((mut pos, mut way_in)) = stack.pop() {
+        let mut ways_out = tiles[pos].ways_out(way_in);
+        while ways_out.len() == 1 {
             // Optimized path
-            if !history[pos].insert(way) {
+            if !history[pos].insert(way_in) {
                 continue 'stack;
             }
-            way = next_ways.iter().next().unwrap();
-            pos = way.step(pos);
-            next_ways = tiles[pos].next_ways(way);
+            way_in = ways_out.iter().next().unwrap();
+            pos = way_in.step(pos);
+            ways_out = tiles[pos].ways_out(way_in);
         }
 
-        if next_ways.is_empty() || !history[pos].insert(way) {
+        if ways_out.is_empty() || !history[pos].insert(way_in) {
             continue;
         }
 
-        for next in next_ways {
-            stack.push((next.step(pos), next));
+        for way_out in ways_out {
+            stack.push((way_out.step(pos), way_out));
         }
     }
 
@@ -97,7 +97,7 @@ fn part1(tiles: &Tiles) -> usize {
 
 fn part2(tiles: &Tiles) -> usize {
     perimeter(tiles.shape())
-        .map(|(pos, way)| solve(tiles, pos, way))
+        .map(|(pos, way_in)| solve(tiles, pos, way_in))
         .max()
         .unwrap_or(0)
 }
