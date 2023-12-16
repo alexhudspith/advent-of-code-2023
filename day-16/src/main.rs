@@ -57,15 +57,25 @@ fn solve(tiles: &Tiles, pos: (usize, usize), way: Way) -> usize {
     let mut stack = vec![];
     stack.push((pos, way));
 
-    while let Some((pos, way)) = stack.pop() {
-        let tile = tiles[pos];
-        let ways = tile.next_ways(way);
-        if ways.is_empty() || !history[pos].insert(way) {
+    'stack:
+    while let Some((mut pos, mut way)) = stack.pop() {
+        let mut next_ways = tiles[pos].next_ways(way);
+        while next_ways.len() == 1 {
+            // Optimized path
+            if !history[pos].insert(way) {
+                continue 'stack;
+            }
+            way = next_ways.iter().next().unwrap();
+            pos = way.step(pos);
+            next_ways = tiles[pos].next_ways(way);
+        }
+
+        if next_ways.is_empty() || !history[pos].insert(way) {
             continue;
         }
 
-        for w in ways {
-            stack.push((w.step(pos), w));
+        for next in next_ways {
+            stack.push((next.step(pos), next));
         }
     }
 
