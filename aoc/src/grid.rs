@@ -8,6 +8,7 @@ use std::hash::{Hash, Hasher};
 use std::iter::repeat;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
+use std::str::FromStr;
 
 use itertools::Itertools;
 
@@ -34,22 +35,45 @@ impl Axis {
     }
 }
 
-fn debug_to_str<T>(value: &[T], f: &mut Formatter<'_>) -> fmt::Result
+fn debug_to_str<T>(_row: usize, value: &[T], f: &mut Formatter<'_>) -> fmt::Result
     where [T]: Debug
 {
     value.fmt(f)
 }
 
-fn ascii_to_str(value: &[u8], f: &mut Formatter<'_>) -> fmt::Result {
-    write!(f, "{:?}", String::from_utf8_lossy(value))
+fn ascii_to_str(_row: usize, value: &[u8], f: &mut Formatter<'_>) -> fmt::Result {
+    if f.alternate() {
+        write!(f, "{:#?}", String::from_utf8_lossy(value))
+    } else {
+        write!(f, "{:?}", String::from_utf8_lossy(value))
+    }
 }
 
-fn chars_to_str(value: &[char], f: &mut Formatter<'_>) -> fmt::Result {
+fn chars_to_str(_row: usize, value: &[char], f: &mut Formatter<'_>) -> fmt::Result {
     let s: String = value.iter().copied().collect();
-    write!(f, "{:?}", s)
+    if f.alternate() {
+        write!(f, "{:#?}", s)
+    } else {
+        write!(f, "{:?}", s)
+    }
 }
 
-pub type RowFormatter<T> = dyn Fn(&[T], &mut Formatter<'_>) -> fmt::Result;
+fn ways_to_str(_row: usize, value: &[Option<Way>], f: &mut Formatter<'_>) -> fmt::Result {
+    for v in value {
+        match v {
+            None => write!(f, " "),
+            Some(w) => if f.alternate() {
+                write!(f, "{:#}", w)
+            } else {
+                write!(f, "{}", w)
+            }
+        }?;
+    }
+
+    Ok(())
+}
+
+pub type RowFormatter<T> = dyn Fn(usize, &[T], &mut Formatter<'_>) -> fmt::Result;
 
 #[derive(Clone)]
 pub struct Grid<T=u8> {
@@ -66,7 +90,7 @@ impl<T: Hash> Hash for Grid<T> {
 }
 
 impl Grid<u8> {
-    pub fn new_ascii(rows: usize, cols: usize) -> Self {
+    pub fn new_ascii((rows, cols): (usize, usize)) -> Self {
         let cells = vec![b'.'; rows * cols];
         Self {
             shape: (rows, cols),
@@ -77,7 +101,7 @@ impl Grid<u8> {
 }
 
 impl Grid<char> {
-    pub fn new_char(rows: usize, cols: usize) -> Self {
+    pub fn new_char((rows, cols): (usize, usize)) -> Self {
         let cells = vec!['.'; rows * cols];
 
         Self {
@@ -87,6 +111,19 @@ impl Grid<char> {
         }
     }
 }
+
+impl Grid<Option<Way>> {
+    pub fn new_ways((rows, cols): (usize, usize)) -> Self {
+        let cells = vec![None; rows * cols];
+
+        Self {
+            shape: (rows, cols),
+            cells: cells,
+            debug_fmt: Rc::from(ways_to_str),
+        }
+    }
+}
+
 
 impl<T> Grid<T> {
     pub fn new((rows, cols): (usize, usize)) -> Self where T: Default + 'static, [T]: Debug {
@@ -185,8 +222,8 @@ impl<T> Debug for Grid<T> {
 
 impl<T> Display for Grid<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        for row in self.iter_rows() {
-            (self.debug_fmt)(row, f)?;
+        for (r, row) in self.iter_rows().enumerate() {
+            (self.debug_fmt)(r, row, f)?;
             writeln!(f)?;
         }
         Ok(())
@@ -274,7 +311,7 @@ pub fn read_grid_with_transform<R, T, E, F, D>(
         T: Clone,
         F: FnMut(u8) -> Result<T, E>,
         aoc::Error: From<E>,
-        D: 'static + Fn(&[T], &mut Formatter<'_>) -> fmt::Result,
+        D: 'static + Fn(usize, &[T], &mut Formatter<'_>) -> fmt::Result,
 {
     let mut cells: Vec<T> = vec![];
     let mut expected_col_count = 0;
@@ -422,7 +459,7 @@ mod tests {
 
 pub type Ways = EnumSet<Way>;
 
-#[derive(Debug, EnumSetType)]
+#[derive(Debug, PartialOrd, Ord, EnumSetType)]
 pub enum Way {
     Up,
     Right,
@@ -520,5 +557,129 @@ impl Way {
             Way::Down => Way::Right,
             Way::Left => Way::Up,
         }
+    }
+}
+
+impl TryFrom<char> for Way {
+    type Error = char;
+
+    fn try_from(value: char) -> Result<Way, char> {
+        let result = match value {
+            'U' | '↑' => Way::Up,
+            'R' | '→' => Way::Right,
+            'D' | '↓' => Way::Down,
+            'L' | '←' => Way::Left,
+            _ => { return Err(value); }
+        };
+
+        Ok(result)
+    }
+}
+
+impl FromStr for Way {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let only: char = s.chars().exactly_one().map_err(|_| s)?;
+        let result = Way::try_from(only)?;
+        Ok(result)
+    }
+}
+
+impl From<Way> for char {
+    fn from(value: Way) -> Self {
+        match value {
+            Way::Up => '↑',
+            Way::Right => '→',
+            Way::Down => '↓',
+            Way::Left => '←',
+        }
+    }
+}
+
+impl From<&Way> for char {
+    fn from(value: &Way) -> Self {
+        Self::from(*value)
+    }
+}
+
+impl Display for Way {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let chr = if f.alternate() {
+            format!("{:?}", self).chars().next().unwrap()
+        } else {
+            char::from(self)
+        };
+        write!(f, "{}", chr)
+    }
+}
+
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct WayMap<V>([Option<V>; 4]);
+
+impl<V> WayMap<V> {
+    pub fn new() -> Self {
+        Self([None, None, None, None])
+    }
+
+    pub fn with_all_default() -> Self where V: Default {
+        Self([Some(V::default()), Some(V::default()), Some(V::default()), Some(V::default())])
+    }
+
+    pub fn with_all(v: V) -> Self where V: Clone {
+        Self([Some(v.clone()), Some(v.clone()), Some(v.clone()), Some(v)])
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.iter().flatten().count()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn insert(&mut self, k: Way, v: V) -> bool {
+        let bucket = &mut self.0[k as usize];
+        let result = bucket.is_none();
+        *bucket = Some(v);
+        result
+    }
+
+    pub fn get(&self, k: &Way) -> Option<&V> {
+        self.0[*k as usize].as_ref()
+    }
+
+    pub fn get_mut(&mut self, k: &Way) -> Option<&mut V> {
+        self.0[*k as usize].as_mut()
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item=(Way, &V)> {
+        Ways::all().iter()
+            .filter_map(|w|
+                self.0[w as usize].as_ref().map(|v| (w, v))
+            )
+    }
+
+    pub fn keys(&self) -> impl Iterator<Item=Way> + '_ {
+        self.iter().map(|(k, _)| k)
+    }
+
+    pub fn values(&self) -> impl Iterator<Item=&V> + '_ {
+        self.iter().map(|(_, v)| v)
+    }
+}
+
+impl<V> Index<Way> for WayMap<V> {
+    type Output = V;
+
+    fn index(&self, index: Way) -> &Self::Output {
+        self.get(&index).unwrap_or_else(|| panic!("No such key"))
+    }
+}
+
+impl<V> IndexMut<Way> for WayMap<V> {
+    fn index_mut(&mut self, index: Way) -> &mut Self::Output {
+        self.get_mut(&index).unwrap_or_else(|| panic!("No such key"))
     }
 }
