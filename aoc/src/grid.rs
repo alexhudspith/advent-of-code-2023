@@ -16,6 +16,7 @@ use enumset::{EnumSet, EnumSetType};
 
 use crate as aoc;
 use aoc::infallible;
+use crate::{CollectArray, grid};
 
 #[derive(Debug, EnumSetType)]
 pub enum Axis {
