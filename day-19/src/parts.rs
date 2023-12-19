@@ -53,10 +53,6 @@ impl RangedPart {
         Self { xmas: [range; CATS] }
     }
 
-    pub const fn empty() -> Self {
-        Self { xmas: [Range::new(0, 0); CATS] }
-    }
-
     pub fn is_empty(&self) -> bool {
         self.xmas.iter().any(|x| x.is_empty())
     }
