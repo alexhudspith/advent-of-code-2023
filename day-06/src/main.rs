@@ -3,7 +3,8 @@ use std::num::ParseIntError;
 
 use indoc::indoc;
 use itertools::{Itertools, zip_eq};
-use aoc::{aoc_err, parse_spaced_vec};
+use aoc::aoc_err;
+use aoc::parse::parse_spaced_vec;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Race {

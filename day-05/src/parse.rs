@@ -1,9 +1,11 @@
 use std::io::{BufRead, BufReader, Read};
 
 use itertools::Itertools;
-use aoc::{aoc_err, some_ok_or, parse_spaced_vec};
 
-use crate::{SeedMapEntry, SeedMap};
+use aoc::aoc_err;
+use aoc::parse::{parse_spaced_vec, some_ok_or};
+
+use crate::{SeedMap, SeedMapEntry};
 
 fn parse_seed_entry(line: &str) -> Result<SeedMapEntry, aoc::Error> {
     if let &[dest, src, len] = parse_spaced_vec::<u64>(line)?.as_slice() {

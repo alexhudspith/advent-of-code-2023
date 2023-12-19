@@ -5,7 +5,8 @@ use std::{iter, str};
 use std::ops::Index;
 use std::str::FromStr;
 use itertools::Itertools;
-use aoc::{aoc_err, CollectArray, some_ok_or};
+use aoc::{aoc_err, CollectArray};
+use aoc::parse::some_ok_or;
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Direction { Left = 0, Right = 1 }

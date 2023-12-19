@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Read, Seek};
 
 use itertools::Itertools;
+use aoc::parse::parse_spaced;
 
 fn extrapolate(values: &[i64]) -> i64 {
     if values.is_empty() {
@@ -26,7 +27,7 @@ fn run<R: Read>(input: R, backwards: bool) -> Result<i64, aoc::Error> {
     let mut total = 0;
     for line in lines {
         let line = line?;
-        let mut nums: Vec<i64> = aoc::parse_spaced(&line)?;
+        let mut nums: Vec<i64> = parse_spaced(&line)?;
         if backwards {
             nums.reverse();
         }

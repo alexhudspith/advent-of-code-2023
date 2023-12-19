@@ -3,8 +3,8 @@
 #![feature(new_uninit)]
 
 pub mod grid;
+pub mod parse;
 
-use std::borrow::Borrow;
 use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter};
 use std::{env, fs, io};
@@ -14,7 +14,7 @@ use std::num::ParseIntError;
 use std::ops::{Add, AddAssign};
 use std::panic::panic_any;
 use std::path::PathBuf;
-use std::str::{FromStr, Utf8Error};
+use std::str::Utf8Error;
 
 use itertools::Itertools;
 
@@ -131,29 +131,6 @@ pub fn find_path(filename: &str) -> PathBuf {
 
 pub fn find_input_path(day_dirname: &str) -> PathBuf {
     find_path(&format!("{day_dirname}.txt"))
-}
-
-pub fn parse_spaced_vec<T>(line: &str) -> Result<Vec<T>, T::Err> where T: FromStr {
-    parse_spaced(line)
-}
-
-pub fn parse_spaced<T, C>(line: &str) -> Result<C, T::Err>
-    where T: FromStr, C: FromIterator<T>
-{
-    line.split_ascii_whitespace().map(|n| n.parse::<T>()).try_collect()
-}
-
-pub fn parse_lines<T, S>(lines: impl Iterator<Item=S>) -> Result<Vec<T>, T::Err>
-    where T: FromStr, S: Borrow<str>
-{
-    lines.map(|line| line.borrow().parse()).try_collect()
-}
-
-pub fn some_ok_or<T, E>(item: Option<Result<T, E>>, message: &str) -> Result<T, Error>
-    where Error: From<E>
-{
-    let result: Result<T, E> = item.ok_or_else(|| <Error as From<&str>>::from(message))?;
-    result.map_err(Error::from)
 }
 
 #[inline]

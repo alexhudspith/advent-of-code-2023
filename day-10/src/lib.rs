@@ -109,5 +109,10 @@ pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
 
 pub fn read_maze<R: Read>(input: R) -> Result<Maze, aoc::Error> {
     let mut reader = BufReader::new(input);
-    read_grid_with_transform(&mut reader, Some(Ways::empty()), infallible(tile_to_ways), ways_to_graphic_line)
+    read_grid_with_transform(
+        &mut reader,
+        Some(Ways::empty()),
+        infallible(tile_to_ways),
+        |_c, w, f| ways_to_graphic_line(w, f)
+    )
 }

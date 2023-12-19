@@ -3,7 +3,9 @@ use std::io::{BufRead, BufReader, Read};
 use std::str::FromStr;
 
 use itertools::Itertools;
-use aoc::{aoc_err, parse_lines, parse_spaced};
+
+use aoc::aoc_err;
+use aoc::parse::{parse_lines, parse_spaced};
 
 pub type Cards = Vec<Card>;
 
