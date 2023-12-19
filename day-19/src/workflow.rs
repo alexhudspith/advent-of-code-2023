@@ -117,23 +117,23 @@ impl Workflow {
 
         let mut handle = |t: &RangedPartTarget| {
             if t.part.is_empty() {
-                return false;
+                return true;
             }
 
             if t.target == Target::Pass {
-                true
-            } else {
-                targets.push(t.clone());
-                false
+                return false;
             }
+
+            targets.push(t.clone());
+            true
         };
 
         while let Some((rule_ix, target)) = rule_target_stack.pop() {
             let (a, b) = self.rules[rule_ix].split(&target.part);
-            if handle(&a) {
+            if !handle(&a) {
                 rule_target_stack.push((rule_ix + 1, a));
             }
-            if handle(&b) {
+            if !handle(&b) {
                 rule_target_stack.push((rule_ix + 1, b));
             }
         }
