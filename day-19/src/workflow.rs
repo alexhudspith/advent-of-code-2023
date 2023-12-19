@@ -151,6 +151,15 @@ pub struct PartsSystem {
 impl PartsSystem {
     const MAX_STEPS: u64 = 1000;
 
+    pub fn new(workflows: Vec<Workflow>) -> Self {
+        let index = workflows.iter()
+            .enumerate()
+            .map(|(i, w)| (w.name().to_owned(), i))
+            .collect();
+
+        Self { workflows, index }
+    }
+
     pub fn value(&self, part: &Part) -> u64 {
         let mut ix = self.index["in"];
         for _ in 0..Self::MAX_STEPS {

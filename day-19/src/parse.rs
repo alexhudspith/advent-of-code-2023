@@ -1,21 +1,30 @@
 use std::io::BufRead;
 use std::str::FromStr;
-use itertools::Itertools;
-use aoc::CollectArray;
 
-use crate::workflow::{Op, Rule, PartsSystem, Target, Workflow};
+use itertools::Itertools;
+
+use aoc::CollectArray;
+use aoc::parse::{OkOrErr, ParseExt};
+
 use crate::parts::{Category, Part};
+use crate::workflow::{Op, PartsSystem, Rule, Target, Workflow};
 
 impl FromStr for Part {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut part = Part::default();
-        let parts_str = s.strip_prefix('{').and_then(|s| s.strip_suffix('}')).unwrap();
+
+        let parts_str = s.strip_prefix('{')
+            .and_then(|p| p.strip_suffix('}'))
+            .ok_or_err(s)?;
+
         for cat_val in parts_str.split(',') {
-            let [category, value] = cat_val.split('=').try_collect_array()?;
-            let category: Category = category.parse()?;
-            let value: u64 = value.parse().map_err(|_| s.to_owned())?;
+            let [category, value] = cat_val.split('=')
+                .try_collect_array()
+                .ok_or_err(s)?;
+            let category: Category = category.please(s)?;
+            let value = value.please(s)?;
             part[category] = value;
         }
 
@@ -66,24 +75,22 @@ impl FromStr for Rule {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        fn parse<T: FromStr>(s: &str) -> Result<T, String> {
-            s.parse().map_err(|_| s.to_owned())
-        }
-
         let rule_parts = s.split_inclusive(&['<', '>', ':']);
 
         let Ok([category_op, value_colon, target]) = rule_parts.try_collect_array() else {
-            return Ok(Self::fallback(parse(s)?))
+            let target = s.please(s)?;
+            return Ok(Self::fallback(target))
         };
 
-        let category = &category_op[0..1];
-        let op = &category_op[1..];
-        let value = value_colon.strip_suffix(':').unwrap();
+        let cat_ix = category_op.chars().next().ok_or_err(s)?.len_utf8();
+        let (category, op) = category_op.split_at(cat_ix);
+        let value = value_colon.strip_suffix(':').ok_or_err(s)?;
+
         let (category, op, value, target) = (
-            parse(category)?,
-            parse(op)?,
-            parse(value)?,
-            parse(target)?,
+            category.please(s)?,
+            op.please(s)?,
+            value.please(s)?,
+            target.please(s)?,
         );
 
         Ok(Self::new(category, op, value, target))
@@ -95,45 +102,38 @@ impl FromStr for Workflow {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut parts = s.split(&['{', '}']);
-        let name = parts.next().unwrap().to_owned();
-        let rules_str = parts.next().unwrap();
+        let name = parts.next().ok_or_err(s)?.to_owned();
+        let rules_str = parts.next().ok_or_err(s)?;
         let rule_str = rules_str.split(',');
-        let rules = rule_str.map(|s| s.parse()).try_collect()?;
+        let rules = rule_str.map(|s| s.parse()).try_collect().ok_or_err(s)?;
 
         Ok(Self::new(name, rules))
     }
 }
 
-pub fn read_parts<R: BufRead>(input: R) -> Result<Vec<Part>, aoc::Error> {
-    let mut parts = Vec::new();
+fn read_many<R, T>(input: R) -> Result<Vec<T>, aoc::Error>
+    where
+        R: BufRead,
+        T: FromStr,
+        aoc::Error: From<T::Err>
+{
+    let mut values = Vec::new();
     for line in input.lines() {
         let line = line?;
         if line.is_empty() {
             break;
         }
 
-        let part: Part = line.parse()?;
-        parts.push(part);
+        values.push(line.parse()?);
     }
 
-    Ok(parts)
+    Ok(values)
+}
+
+pub fn read_parts<R: BufRead>(input: R) -> Result<Vec<Part>, aoc::Error> {
+    read_many(input)
 }
 
 pub fn read_system<R: BufRead>(input: R) -> Result<PartsSystem, aoc::Error> {
-    let mut workflows = Vec::new();
-    for line in input.lines() {
-        let line = line?;
-        if line.is_empty() {
-            break;
-        }
-
-        let workflow: Workflow = line.parse()?;
-        workflows.push(workflow);
-    }
-
-    let index = workflows.iter()
-        .enumerate()
-        .map(|(i, w)| (w.name().to_owned(), i))
-        .collect();
-    Ok(PartsSystem { workflows, index })
+    read_many(input).map(PartsSystem::new)
 }
