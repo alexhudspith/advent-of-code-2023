@@ -1,3 +1,4 @@
+use std::cmp::{max, min};
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -26,6 +27,12 @@ impl Range {
 
     pub const fn len(&self) -> u64 {
         self.end - self.start
+    }
+
+    pub fn intersection(&self, other: &Range) -> Option<Range> {
+        let start = max(self.start, other.start);
+        let end = min(self.end, other.end);
+        (start < end).then(|| Range::new(start, end))
     }
 
     pub fn split_at(&self, i: u64) -> (Range, Range) {

@@ -1,9 +1,9 @@
 pub mod parse;
 
-use std::cmp::{max, min};
 use std::iter;
 use itertools::Itertools;
 use aoc::is_sorted;
+use aoc::range::Range;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SeedMap {
@@ -27,51 +27,12 @@ impl SeedMapEntry {
 
     fn translate(&self, src_ix: u64) -> u64 {
         self.dest
-            .wrapping_sub(self.src_range.start)
+            .wrapping_sub(self.src_range.start())
             .wrapping_add(src_ix)
     }
 
     fn translate_range(&self, range: Range) -> Range {
-        Range::from_start_len(self.translate(range.start), range.len())
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Range {
-    start: u64,
-    end: u64,
-}
-
-impl Range {
-    pub fn new(start: u64, end: u64) -> Self {
-        assert!(start <= end);
-        Self { start, end }
-    }
-
-    pub fn from_start_len(start: u64, len: u64) -> Self {
-        Self::new(start, start + len)
-    }
-
-    pub fn start(&self) -> u64 {
-        self.start
-    }
-
-    pub fn end(&self) -> u64 {
-        self.end
-    }
-
-    pub fn len(&self) -> u64 {
-        self.end - self.start
-    }
-
-    pub fn intersection(&self, other: &Range) -> Option<Range> {
-        let start = max(self.start, other.start);
-        let end = min(self.end, other.end);
-        (start < end).then(|| Range::new(start, end))
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
+        Range::from_start_len(self.translate(range.start()), range.len())
     }
 }
 
@@ -86,12 +47,12 @@ impl SeedMap {
         let mut new_entries = Vec::with_capacity(entries.len() * 2 + 1);
         let mut prev_end = 0;
         for entry in entries {
-            let len = entry.src_range.start - prev_end;
+            let len = entry.src_range.start() - prev_end;
             if len > 0 {
                 new_entries.push(SeedMapEntry::new(prev_end, prev_end, len));
             }
             new_entries.push(entry);
-            prev_end = entry.src_range.end;
+            prev_end = entry.src_range.end();
         }
 
         let len = u64::MAX - prev_end;
@@ -122,7 +83,7 @@ impl SeedMap {
                 let result_opt = a_range.intersection(&b_range)
                     .map(|intersect| (a, b, intersect));
 
-                if b_range.end <= a_range.end {
+                if b_range.end() <= a_range.end() {
                     b_opt = b_iter.next();
                 } else {
                     a_opt = a_iter.next();

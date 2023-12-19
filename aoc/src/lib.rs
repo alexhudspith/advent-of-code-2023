@@ -4,6 +4,7 @@
 
 pub mod grid;
 pub mod parse;
+pub mod range;
 
 use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter};

@@ -1,5 +1,5 @@
 use std::ops::{Index, IndexMut};
-use crate::range::Range;
+use aoc::range::Range;
 
 pub type Part = Ratings<u64>;
 pub type RangedPart = Ratings<Range>;

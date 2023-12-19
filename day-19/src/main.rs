@@ -1,7 +1,8 @@
 use std::fs::File;
 use std::io::{BufReader, Read, Seek};
+use aoc::range::Range;
 
-use day_19::{Range, read_parts, read_system};
+use day_19::{read_parts, read_system};
 pub use day_19::RangedPart;
 
 fn part1<R: Read>(input: R) -> Result<u64, aoc::Error> {
