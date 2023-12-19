@@ -389,14 +389,14 @@ mod tests {
 
     #[test]
     fn transpose_col() {
-        let mut g = Grid::new_ascii(5, 1);
+        let mut g = Grid::new_ascii((5, 1));
         g[0][0] = b'1';
         g[1][0] = b'2';
         g[2][0] = b'3';
         g[3][0] = b'4';
         g[4][0] = b'5';
 
-        let mut expected = Grid::new_ascii(1, 5);
+        let mut expected = Grid::new_ascii((1, 5));
         expected[0][0] = b'1';
         expected[0][1] = b'2';
         expected[0][2] = b'3';
@@ -409,7 +409,7 @@ mod tests {
 
     #[test]
     fn transpose() {
-        let mut g = Grid::new_ascii(5, 4);
+        let mut g = Grid::new_ascii((5, 4));
         for c in 0..4 {
             g[0][c] = b'1';
             g[1][c] = b'2';
@@ -418,7 +418,7 @@ mod tests {
             g[4][c] = b'5';
         }
 
-        let mut expected = Grid::new_ascii(4, 5);
+        let mut expected = Grid::new_ascii((4, 5));
         for r in 0..expected.shape.0 {
             expected[r][0] = b'1';
             expected[r][1] = b'2';
@@ -443,7 +443,7 @@ mod tests {
 
         let g = Grid::from(slice);
 
-        let mut expected = Grid::new_ascii(4, 5);
+        let mut expected = Grid::new_ascii((4, 5));
         for r in 0..expected.shape.0 {
             expected[r][0] = b'1';
             expected[r][1] = b'2';
