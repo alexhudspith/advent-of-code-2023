@@ -204,6 +204,10 @@ impl<T> Grid<T> {
         let (i, _) = self.cells.iter().enumerate().find(|&(_, cell)| predicate(cell))?;
         Some(self.to_2d(i))
     }
+
+    pub fn fill(&mut self, value: T) where T: Clone {
+        self.cells.fill(value);
+    }
 }
 
 impl<T: PartialEq> PartialEq for Grid<T> {

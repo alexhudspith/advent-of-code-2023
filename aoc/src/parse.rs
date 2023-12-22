@@ -32,6 +32,12 @@ pub trait ParseExt<T: ?Sized> where T: FromStr {
     fn please(&self, s: &str) -> Result<T, String>;
 }
 
+impl<T: ?Sized> ParseExt<T> for str where T: FromStr {
+    fn please(&self, s: &str) -> Result<T, String> {
+        self.parse::<T>().map_err(|_| s.to_string())
+    }
+}
+
 impl<T: ?Sized> ParseExt<T> for &str where T: FromStr {
     fn please(&self, s: &str) -> Result<T, String> {
         self.parse::<T>().map_err(|_| s.to_string())

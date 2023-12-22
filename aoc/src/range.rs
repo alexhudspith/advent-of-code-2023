@@ -1,7 +1,8 @@
 use std::cmp::{max, min};
 use std::fmt::{Display, Formatter};
+use std::vec::IntoIter;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Range {
     start: u64,
     end: u64,
@@ -35,6 +36,10 @@ impl Range {
         (start < end).then(|| Range::new(start, end))
     }
 
+    pub fn intersects(&self, other: &Range) -> bool {
+        self.intersection(other).is_some()
+    }
+
     pub fn split_at(&self, i: u64) -> (Range, Range) {
         if self.start <= i && i <= self.end {
             (Range::new(self.start, i), Range::new(i, self.end))
@@ -49,6 +54,15 @@ impl Range {
 
     pub const fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+}
+
+impl IntoIterator for Range {
+    type Item = u64;
+    type IntoIter = std::ops::Range<u64>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.start..self.end
     }
 }
 
