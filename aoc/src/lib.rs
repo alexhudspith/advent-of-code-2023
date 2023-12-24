@@ -11,7 +11,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::{env, fs, io};
 use std::convert::Infallible;
 use std::mem::MaybeUninit;
-use std::num::ParseIntError;
+use std::num::{ParseFloatError, ParseIntError};
 use std::ops::{Add, AddAssign};
 use std::panic::panic_any;
 use std::path::PathBuf;
@@ -29,6 +29,7 @@ pub enum Error {
     IoError(io::Error),
     ParseDataError(ParseDataError),
     ParseIntError(ParseIntError),
+    ParseFloatError(ParseFloatError),
     Utf8Error(Utf8Error),
     // When not unexpected
     EndOfFile,
@@ -51,6 +52,12 @@ impl From<io::Error> for Error {
 impl From<ParseIntError> for Error {
     fn from(value: ParseIntError) -> Self {
         Self::ParseIntError(value)
+    }
+}
+
+impl From<ParseFloatError> for Error {
+    fn from(value: ParseFloatError) -> Self {
+        Self::ParseFloatError(value)
     }
 }
 

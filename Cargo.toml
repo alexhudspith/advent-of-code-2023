@@ -24,6 +24,7 @@ members = [
 #    "day-20",
 #    "day-21",
     "day-22",
+    "day-24",
 ]
 
 [workspace.package]
@@ -43,6 +44,8 @@ num = "0.4.1"
 enumset = "1.1.3"
 fxhash = "0.2.1"
 fibonacii-heap = "0.1.2"
+z3 = "0.12.1"
+z3-sys = "0.8.1"
 
 [profile.release]
 lto = true

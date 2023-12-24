@@ -1,0 +1,17 @@
+[package]
+name = "day-24"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+aoc = { path = "../aoc" }
+itertools = { workspace = true, features = [] }
+z3 = { workspace = true }
+z3-sys = { workspace = true }
+
+[dev-dependencies]
+indoc = { workspace = true }
