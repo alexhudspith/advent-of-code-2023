@@ -13,6 +13,7 @@ doctest = false
 [dependencies]
 itertools = { workspace = true }
 nom = { workspace = true, optional = true }
+num = { workspace = true }
 enumset = { workspace = true }
 
 [features]

@@ -1,22 +1,21 @@
 #![allow(clippy::redundant_field_names)]
 
+use std::{fmt, iter};
 use std::borrow::Borrow;
 use std::fmt::{Debug, Display, Formatter};
-use std::io::BufRead;
-use std::{fmt, iter};
 use std::hash::{Hash, Hasher};
+use std::io::BufRead;
 use std::iter::repeat;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 use std::str::FromStr;
 
+use enumset::{EnumSet, EnumSetType};
 use itertools::Itertools;
 
-use enumset::{EnumSet, EnumSetType};
+use aoc::infallible;
 
 use crate as aoc;
-use aoc::infallible;
-use crate::{CollectArray, grid};
 
 #[derive(Debug, EnumSetType)]
 pub enum Axis {
@@ -62,7 +61,7 @@ fn chars_to_str(_row: usize, value: &[char], f: &mut Formatter<'_>) -> fmt::Resu
 fn ways_to_str(_row: usize, value: &[Option<Way>], f: &mut Formatter<'_>) -> fmt::Result {
     for v in value {
         match v {
-            None => write!(f, " "),
+            None => write!(f, "⋅"),
             Some(w) => if f.alternate() {
                 write!(f, "{:#}", w)
             } else {
@@ -125,7 +124,6 @@ impl Grid<Option<Way>> {
     }
 }
 
-
 impl<T> Grid<T> {
     pub fn new((rows, cols): (usize, usize)) -> Self where T: Default + 'static, [T]: Debug {
         let cells = iter::repeat_with(T::default).take(rows * cols).collect();
@@ -165,7 +163,7 @@ impl<T> Grid<T> {
     }
 
     pub fn iter_rows(&self) -> impl DoubleEndedIterator<Item=&[T]> + ExactSizeIterator + '_ {
-        self.cells.chunks(self.shape.1)
+        self.cells.chunks_exact(self.shape.1)
     }
 
     const fn to_1d(&self, (r, c): (usize, usize)) -> usize {
@@ -207,6 +205,23 @@ impl<T> Grid<T> {
 
     pub fn fill(&mut self, value: T) where T: Clone {
         self.cells.fill(value);
+    }
+
+    pub fn step<I: num::PrimInt>(&self, pos: (I, I), way: Way) -> Option<(I, I)> {
+        self.steps(pos, way, I::one())
+    }
+
+    pub fn steps<I: num::PrimInt>(&self, (r, c): (I, I), way: Way, count: I) -> Option<(I, I)> {
+        let ru: usize = num::cast(r).unwrap();
+        let cu: usize = num::cast(c).unwrap();
+
+        match way {
+            Way::Up if ru == 0 => None,
+            Way::Left if cu == 0 => None,
+            Way::Down if ru >= self.shape.0 - 1 => None,
+            Way::Right if cu >= self.shape.1 - 1 => None,
+            _ => Some(way.steps((r, c), count))
+        }
     }
 }
 
@@ -464,7 +479,7 @@ mod tests {
 
 pub type Ways = EnumSet<Way>;
 
-#[derive(Debug, PartialOrd, Ord, EnumSetType)]
+#[derive(Debug, Hash, PartialOrd, Ord, EnumSetType)]
 pub enum Way {
     Up,
     Right,
@@ -495,7 +510,7 @@ impl Way {
     }
 
     pub const fn is_horizontal(&self) -> bool {
-        // For constness...
+        // match for constness...
         match self {
             Way::Up => false,
             Way::Right => true,
@@ -508,16 +523,16 @@ impl Way {
         !self.is_horizontal()
     }
 
-    pub const fn step(&self, pos: (usize, usize)) -> (usize, usize) {
-        self.steps(pos, 1)
+    pub fn step<I: num::PrimInt>(&self, pos: (I, I)) -> (I, I) {
+        self.steps(pos, I::one())
     }
 
-    pub const fn steps(&self, pos: (usize, usize), steps: usize) -> (usize, usize) {
+    pub fn steps<I: num::PrimInt>(&self, (r, c): (I, I), count: I) -> (I, I) {
         match self {
-            Way::Up => (pos.0 - steps, pos.1),
-            Way::Right => (pos.0, pos.1 + steps),
-            Way::Down => (pos.0 + steps, pos.1),
-            Way::Left => (pos.0, pos.1 - steps),
+            Way::Up => (r - count, c),
+            Way::Right => (r, c + count),
+            Way::Down => (r + count, c),
+            Way::Left => (r, c - count),
         }
     }
 
