@@ -2,6 +2,7 @@
 /.idea
 /data
 .gitmodules
+Cargo.lock
 input.txt
 day-*.txt
 rustc-ice-*
