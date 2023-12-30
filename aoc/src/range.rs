@@ -1,6 +1,5 @@
 use std::cmp::{max, min};
 use std::fmt::{Display, Formatter};
-use std::vec::IntoIter;
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Range {

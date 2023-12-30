@@ -11,10 +11,11 @@ repository.workspace = true
 doctest = false
 
 [dependencies]
+enumset = { workspace = true }
+fxhash = { workspace = true }
 itertools = { workspace = true }
 nom = { workspace = true, optional = true }
 num = { workspace = true }
-enumset = { workspace = true }
 
 [features]
 default = []
