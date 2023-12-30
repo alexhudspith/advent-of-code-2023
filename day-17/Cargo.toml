@@ -1,0 +1,18 @@
+[package]
+name = "day-17"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+aoc = { path = "../aoc" }
+enumset = { workspace = true }
+itertools = { workspace = true, features = [] }
+fibonacii-heap = { workspace = true }
+fxhash = { workspace = true }
+
+[dev-dependencies]
+indoc = { workspace = true }
