@@ -3,7 +3,8 @@ pub mod parse;
 use std::iter;
 use itertools::Itertools;
 use aoc::is_sorted;
-use aoc::range::Range;
+
+pub type Range = aoc::range::Range<u64>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SeedMap {

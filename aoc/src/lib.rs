@@ -1,6 +1,7 @@
 #![feature(maybe_uninit_uninit_array)]
 #![feature(maybe_uninit_array_assume_init)]
 #![feature(new_uninit)]
+#![feature(step_trait)]
 
 pub mod grid;
 pub mod parse;

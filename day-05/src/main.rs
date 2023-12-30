@@ -1,8 +1,6 @@
 use std::fs::File;
 
 use itertools::Itertools;
-use aoc::range::Range;
-
 use day_05::*;
 
 fn follow_maps(seeds: &[Range], maps: &[SeedMap]) -> Vec<Range> {

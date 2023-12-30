@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 use crate::parts::{Category, Part, RangedPart};
-use aoc::range::Range;
+use crate::Range;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Target {

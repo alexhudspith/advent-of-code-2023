@@ -2,7 +2,8 @@ use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 use std::str::FromStr;
 use aoc::CollectArray;
-use aoc::range::Range;
+
+type Range = aoc::range::Range<u64>;
 
 pub const X: usize = 0;
 pub const Y: usize = 1;
