@@ -74,7 +74,7 @@ fn part2(s: &str) -> Result<u64, aoc::Error> {
 }
 
 fn main() -> Result<(), aoc::Error> {
-    let s = indoc!{"
+    let s = indoc!{r"
         Time:        56     71     79     99
         Distance:   334   1135   1350   2430
     "};

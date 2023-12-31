@@ -156,7 +156,7 @@ mod tests {
     use std::io::Cursor;
     use indoc::indoc;
 
-    const EXAMPLE: &str = indoc!{"
+    const EXAMPLE: &str = indoc!{r"
         ...........
         .....###.#.
         .###.##..#.
