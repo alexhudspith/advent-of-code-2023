@@ -4,14 +4,12 @@ use std::io::{Read, Seek};
 use day_23::{Coords, Grid, Ordinate, Tile, read_grid, reduce_grid, part1_longest_path, part2_longest_path};
 
 pub fn start(grid: &Grid) -> Coords {
-    let r = 0;
-    let c = grid[r].iter().position(|&tile| tile == Tile::Path).expect("No start tile");
+    let (r, c) = grid.position(|&tile| tile == Tile::Path).expect("No start tile");
     (r as Ordinate, c as Ordinate)
 }
 
 pub fn end(grid: &Grid) -> Coords {
-    let r = grid.shape().0 - 1;
-    let c = grid[r].iter().rposition(|&tile| tile == Tile::Path).expect("No end tile");
+    let (r, c) = grid.rposition(|&tile| tile == Tile::Path).expect("No end tile");
     (r as Ordinate, c as Ordinate)
 }
 

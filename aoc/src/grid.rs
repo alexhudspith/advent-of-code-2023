@@ -122,10 +122,6 @@ impl<T> Grid<T> {
         })
     }
 
-    pub fn iter(&self, major: Axis) -> impl DoubleEndedIterator<Item=impl DoubleEndedIterator<Item=&T> + ExactSizeIterator> + ExactSizeIterator + '_ {
-        (0..self.len(major)).map(move |i| self.get(major, i))
-    }
-
     pub fn iter_rows(&self) -> impl DoubleEndedIterator<Item=&[T]> + ExactSizeIterator + '_ {
         self.cells.chunks_exact(self.shape.1)
     }
@@ -138,11 +134,7 @@ impl<T> Grid<T> {
         (i / self.shape.1, i % self.shape.1)
     }
 
-    pub fn transposed(&mut self) -> Self where T: Clone {
-        self.clone().into_transpose()
-    }
-
-    pub fn into_transpose(mut self) -> Self {
+    pub fn transpose(&mut self) {
         let mut new_cells = Box::new_uninit_slice(self.cells.len());
         let new_shape = (self.shape.1, self.shape.0);
 
@@ -157,7 +149,6 @@ impl<T> Grid<T> {
         // Safety: all cells were initialized above
         self.cells = unsafe { new_cells.assume_init() }.into_vec();
         self.shape = new_shape;
-        self
     }
 
     pub fn position<F>(&self, mut predicate: F) -> Option<(usize, usize)>
@@ -167,8 +158,11 @@ impl<T> Grid<T> {
         Some(self.to_2d(i))
     }
 
-    pub fn fill(&mut self, value: T) where T: Clone {
-        self.cells.fill(value);
+    pub fn rposition<F>(&self, mut predicate: F) -> Option<(usize, usize)>
+        where F: FnMut(&T) -> bool
+    {
+        let (i, _) = self.cells.iter().enumerate().rfind(|&(_, cell)| predicate(cell))?;
+        Some(self.to_2d(i))
     }
 
     pub fn step<I: num::PrimInt>(&self, pos: (I, I), way: Way) -> Option<(I, I)> {
@@ -424,8 +418,8 @@ mod tests {
         expected[2][0] = 3;
         expected[3][0] = 4;
 
-        let actual = g.into_transpose();
-        assert_eq!(actual, expected);
+        g.transpose();
+        assert_eq!(g, expected);
     }
 
     #[test]
@@ -444,8 +438,8 @@ mod tests {
         expected[0][3] = b'4';
         expected[0][4] = b'5';
 
-        let actual = g.into_transpose();
-        assert_eq!(actual, expected);
+        g.transpose();
+        assert_eq!(g, expected);
     }
 
     #[test]
@@ -468,8 +462,8 @@ mod tests {
             expected[r][4] = b'5';
         }
 
-        let actual = g.into_transpose();
-        assert_eq!(actual, expected);
+        g.transpose();
+        assert_eq!(g, expected);
     }
 
     #[test]
@@ -482,7 +476,7 @@ mod tests {
             [b'5'; 4],
         ].as_slice();
 
-        let g = Grid::from(slice);
+        let mut g = Grid::from(slice);
 
         let mut expected = Grid::new_ascii((4, 5));
         for r in 0..expected.shape.0 {
@@ -493,8 +487,8 @@ mod tests {
             expected[r][4] = b'5';
         }
 
-        let actual = g.into_transpose();
-        assert_eq!(actual, expected);
+        g.transpose();
+        assert_eq!(g, expected);
     }
 }
 
