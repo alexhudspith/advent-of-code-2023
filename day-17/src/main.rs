@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::fmt::{Debug, Display, Formatter};
 use std::fs::File;
 use std::io::{BufReader, Read, Seek};
 
@@ -28,6 +28,12 @@ impl TryFrom<u8> for Tile {
         } else {
             Err(value)
         }
+    }
+}
+
+impl Display for Tile {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.heat_loss)
     }
 }
 

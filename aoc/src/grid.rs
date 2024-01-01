@@ -13,9 +13,8 @@ use std::str::FromStr;
 use enumset::{EnumSet, EnumSetType};
 use itertools::Itertools;
 
-use aoc::infallible;
-
 use crate as aoc;
+use aoc::infallible;
 
 #[derive(Debug, EnumSetType)]
 pub enum Axis {
@@ -35,51 +34,13 @@ impl Axis {
     }
 }
 
-fn debug_to_str<T>(_row: usize, value: &[T], f: &mut Formatter<'_>) -> fmt::Result
-    where [T]: Debug
-{
-    value.fmt(f)
-}
-
-fn ascii_to_str(_row: usize, value: &[u8], f: &mut Formatter<'_>) -> fmt::Result {
-    if f.alternate() {
-        write!(f, "{:#?}", String::from_utf8_lossy(value))
-    } else {
-        write!(f, "{:?}", String::from_utf8_lossy(value))
-    }
-}
-
-fn chars_to_str(_row: usize, value: &[char], f: &mut Formatter<'_>) -> fmt::Result {
-    let s: String = value.iter().copied().collect();
-    if f.alternate() {
-        write!(f, "{:#?}", s)
-    } else {
-        write!(f, "{:?}", s)
-    }
-}
-
-fn ways_to_str(_row: usize, value: &[Option<Way>], f: &mut Formatter<'_>) -> fmt::Result {
-    for v in value {
-        match v {
-            None => write!(f, "⋅"),
-            Some(w) => if f.alternate() {
-                write!(f, "{:#}", w)
-            } else {
-                write!(f, "{}", w)
-            }
-        }?;
-    }
-
-    Ok(())
-}
-
-pub type RowFormatter<T> = dyn Fn(usize, &[T], &mut Formatter<'_>) -> fmt::Result;
+pub type GridDisplay<T> = dyn Fn(&Grid<T>, &mut Formatter) -> fmt::Result;
 
 #[derive(Clone)]
 pub struct Grid<T=u8> {
     shape: (usize, usize),
     cells: Vec<T>,
-    debug_fmt: Rc<RowFormatter<T>>,
+    display: Rc<GridDisplay<T>>,
 }
 
 impl<T: Hash> Hash for Grid<T> {
@@ -95,42 +56,45 @@ impl Grid<u8> {
         Self {
             shape: (rows, cols),
             cells: cells,
-            debug_fmt: Rc::from(ascii_to_str),
-        }
-    }
-}
-
-impl Grid<char> {
-    pub fn new_char((rows, cols): (usize, usize)) -> Self {
-        let cells = vec!['.'; rows * cols];
-
-        Self {
-            shape: (rows, cols),
-            cells: cells,
-            debug_fmt: Rc::from(chars_to_str),
+            display: Rc::new(ascii_fmt),
         }
     }
 }
 
 impl Grid<Option<Way>> {
-    pub fn new_ways((rows, cols): (usize, usize)) -> Self {
+    pub fn new_way_opt((rows, cols): (usize, usize)) -> Self {
         let cells = vec![None; rows * cols];
 
         Self {
             shape: (rows, cols),
             cells: cells,
-            debug_fmt: Rc::from(ways_to_str),
+            display: Rc::new(option_fmt),
+        }
+    }
+}
+
+impl Grid<Ways> {
+    pub fn new_ways((rows, cols): (usize, usize)) -> Self {
+        let cells = vec![Ways::empty(); rows * cols];
+
+        Self {
+            shape: (rows, cols),
+            cells: cells,
+            display: Rc::new(display_fmt),
         }
     }
 }
 
 impl<T> Grid<T> {
-    pub fn new((rows, cols): (usize, usize)) -> Self where T: Default + 'static, [T]: Debug {
+    pub fn new((rows, cols): (usize, usize)) -> Self
+        where
+            T: Default + Display + 'static,
+    {
         let cells = iter::repeat_with(T::default).take(rows * cols).collect();
         Self {
             shape: (rows, cols),
             cells: cells,
-            debug_fmt: Rc::from(debug_to_str),
+            display: Rc::new(display_fmt),
         }
     }
 
@@ -242,11 +206,7 @@ impl<T> Debug for Grid<T> {
 
 impl<T> Display for Grid<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        for (r, row) in self.iter_rows().enumerate() {
-            (self.debug_fmt)(r, row, f)?;
-            writeln!(f)?;
-        }
-        Ok(())
+        (self.display)(self, f)
     }
 }
 
@@ -285,7 +245,8 @@ impl<T> IndexMut<(usize, usize)> for Grid<T> {
 }
 
 impl<T, R> From<&[R]> for Grid<T>
-    where R: Borrow<[T]>, T: Clone + 'static, [T]: Debug
+    where
+        R: Borrow<[T]>, T: Clone + Display + 'static
 {
     fn from(value: &[R]) -> Self {
         let rows = value.len();
@@ -298,25 +259,85 @@ impl<T, R> From<&[R]> for Grid<T>
         Grid {
             shape: (rows, cols),
             cells: cells,
-            debug_fmt: Rc::new(debug_to_str),
+            display: Rc::new(display_fmt),
         }
     }
+}
+
+
+fn ascii_fmt(grid: &Grid<u8>, f: &mut Formatter) -> fmt::Result {
+    let rows = grid.iter_rows().map(|row| String::from_utf8_lossy(row));
+    if f.alternate() {
+        for row in rows {
+            writeln!(f, "{:#}", row)?;
+        }
+    } else {
+        for row in rows {
+            writeln!(f, "{}", row)?;
+        }
+    }
+    Ok(())
+}
+
+fn option_fmt<T: Display>(grid: &Grid<Option<T>>, f: &mut Formatter) -> fmt::Result {
+    if f.alternate() {
+        for row in grid.iter_rows() {
+            for cell_opt in row {
+                if let Some(cell) = cell_opt {
+                    write!(f, "{:#}", cell)?;
+                } else {
+                    write!(f, ".")?;
+                }
+            }
+            writeln!(f)?;
+        }
+    } else {
+        for row in grid.iter_rows() {
+            for cell_opt in row {
+                if let Some(cell) = cell_opt {
+                    write!(f, "{}", cell)?;
+                } else {
+                    write!(f, ".")?;
+                }
+            }
+            writeln!(f)?;
+        }
+    }
+    Ok(())
+}
+
+fn display_fmt<T: Display>(grid: &Grid<T>, f: &mut Formatter) -> fmt::Result {
+    if f.alternate() {
+        for row in grid.iter_rows() {
+            for cell in row {
+                write!(f, "{:#}", cell)?;
+            }
+            writeln!(f)?;
+        }
+    } else {
+        for row in grid.iter_rows() {
+            for cell in row {
+                write!(f, "{}", cell)?;
+            }
+            writeln!(f)?;
+        }
+    }
+    Ok(())
 }
 
 pub fn read_grid_ascii<R>(reader: &mut R, padding: Option<u8>) -> Result<Grid<u8>, aoc::Error>
     where R: BufRead
 {
-    read_grid_with_transform(reader, padding, infallible(std::convert::identity), ascii_to_str)
+    read_grid_with_transform(reader, padding, infallible(std::convert::identity), ascii_fmt)
 }
 
 pub fn read_grid<R, T>(reader: &mut R, padding: Option<T>) -> Result<Grid<T>, aoc::Error>
     where
         R: BufRead,
-        T: Clone + TryFrom<u8> + 'static,
-        [T]: Debug,
+        T: Display + Clone + TryFrom<u8> + 'static,
         aoc::Error: From<T::Error>,
 {
-    read_grid_with_transform(reader, padding, T::try_from, debug_to_str)
+    read_grid_with_transform(reader, padding, T::try_from, display_fmt)
 }
 
 // Optionally pad the grid edges with `padding` rows and columns for easier processing
@@ -324,14 +345,14 @@ pub fn read_grid_with_transform<R, T, E, F, D>(
     reader: &mut R,
     padding_value: Option<T>,
     mut transform: F,
-    debug_fmt: D
+    display: D
 ) -> Result<Grid<T>, aoc::Error>
     where
         R: BufRead,
         T: Clone,
         F: FnMut(u8) -> Result<T, E>,
         aoc::Error: From<E>,
-        D: 'static + Fn(usize, &[T], &mut Formatter<'_>) -> fmt::Result,
+        D: 'static + Fn(&Grid<T>, &mut Formatter<'_>) -> fmt::Result,
 {
     let mut cells: Vec<T> = vec![];
     let mut expected_col_count = 0;
@@ -382,7 +403,7 @@ pub fn read_grid_with_transform<R, T, E, F, D>(
 
     let shape = (cells.len() / expected_col_count, expected_col_count);
     cells.shrink_to_fit();
-    Ok(Grid { cells, shape, debug_fmt: Rc::new(debug_fmt) })
+    Ok(Grid { cells, shape, display: Rc::new(display) })
 }
 
 #[cfg(test)]

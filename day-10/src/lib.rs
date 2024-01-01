@@ -73,9 +73,14 @@ fn ways_to_graphic(ways: Ways) -> char {
         .1
 }
 
-fn ways_to_graphic_line(ways: &[Ways], f: &mut fmt::Formatter) -> fmt::Result {
-    let s: String = ways.iter().copied().map(ways_to_graphic).collect();
-    write!(f, "{:?}", s)
+fn maze_fmt(maze: &Maze, f: &mut fmt::Formatter) -> fmt::Result {
+    for row in maze.iter_rows() {
+        for ways in row {
+            write!(f, "{}", ways_to_graphic(*ways))?;
+        }
+        writeln!(f)?;
+    }
+    Ok(())
 }
 
 pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
@@ -113,6 +118,6 @@ pub fn read_maze<R: Read>(input: R) -> Result<Maze, aoc::Error> {
         &mut reader,
         Some(Ways::empty()),
         infallible(tile_to_ways),
-        |_c, w, f| ways_to_graphic_line(w, f)
+        maze_fmt
     )
 }

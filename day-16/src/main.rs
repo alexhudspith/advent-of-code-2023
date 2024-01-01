@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use std::fs::File;
 use std::io::{BufReader, Read, Seek};
 use enumset::{EnumSet, EnumSetType};
@@ -10,15 +11,15 @@ enum Pathway {
     A, B
 }
 
-impl Pathway {
-    pub fn select(way: Way, a_ways: Ways) -> Self {
-        Self::from(a_ways.contains(way))
-    }
-}
-
 impl From<bool> for Pathway {
     fn from(value: bool) -> Self {
         if value { Self::A } else { Self::B }
+    }
+}
+
+impl Display for Pathway {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", if *self == Self::A { 'A' } else { 'B' })
     }
 }
 
@@ -48,11 +49,17 @@ impl Tile {
             Tile::VSplit => (way_in.into(), Pathway::B),
             Tile::HSplit => (way_in.into(), Pathway::B),
             // A if hit top side, B if hit bottom side
-            Tile::FwdMirror => (way_in.mirror_45_pos().into(), Pathway::select(way_in, Way::Right | Way::Down)),
-            Tile::BackMirror => (way_in.mirror_45_neg().into(), Pathway::select(way_in, Way::Left | Way::Down)),
+            Tile::FwdMirror => {
+                let pathway_a = (Way::Right | Way::Down).contains(way_in);
+                (way_in.mirror_45_pos().into(), pathway_a.into())
+            }
+            Tile::BackMirror => {
+                let pathway_a = (Way::Left | Way::Down).contains(way_in);
+                (way_in.mirror_45_neg().into(), pathway_a.into())
+            }
             // A if runs vertical, B if runs horizontal
-            Tile::Blank => (way_in.into(), Pathway::from(way_in.is_vertical())),
-            Tile::Border => (Ways::empty(), Pathway::from(way_in.is_vertical())),
+            Tile::Blank => (way_in.into(), way_in.is_vertical().into()),
+            Tile::Border => (Ways::empty(), way_in.is_vertical().into()),
         }
     }
 }
@@ -67,6 +74,12 @@ impl TryFrom<u8> for Tile {
             }
         }
         Err(value)
+    }
+}
+
+impl Display for Tile {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", *self as u8 as char)
     }
 }
 
