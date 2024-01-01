@@ -54,11 +54,9 @@ fn main() -> Result<(), aoc::error::Error> {
 
 #[cfg(test)]
 mod tests {
-    use std::io::Cursor;
-
-    use indoc::indoc;
-
     use super::*;
+    use std::io::Cursor;
+    use indoc::indoc;
 
     const EXAMPLE: &str = indoc! {"
         0 3 6 9 12 15

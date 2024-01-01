@@ -44,11 +44,9 @@ fn main() -> Result<(), aoc::error::Error> {
 
 #[cfg(test)]
 mod tests {
-    use std::io::Cursor;
-
-    use indoc::indoc;
-
     use super::*;
+    use std::io::Cursor;
+    use indoc::indoc;
 
     const EXAMPLE: &str = indoc! {"
         Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53

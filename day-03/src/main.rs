@@ -62,7 +62,6 @@ mod tests {
     use super::*;
     use std::io::Cursor;
     use indoc::indoc;
-    use day_03::read_schematic;
 
     const EXAMPLE: &str = indoc! {"
         467..114..

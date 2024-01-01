@@ -401,7 +401,7 @@ pub fn read_grid_with_transform<R, T, E, F, D>(
 
 #[cfg(test)]
 mod tests {
-    use crate::grid::Grid;
+    use super::Grid;
 
     #[test]
     fn transpose_row() {
