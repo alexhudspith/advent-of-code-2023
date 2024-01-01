@@ -2,9 +2,10 @@
 
 use std::collections::{HashMap, VecDeque};
 use std::iter;
-use std::ops::{Add, AddAssign, Mul, Sub};
+use std::ops::{Add, AddAssign, Mul, MulAssign, Sub};
 
 use itertools::Itertools;
+use aoc::cycle::find_in_cycle;
 
 pub mod parse;
 
@@ -110,8 +111,8 @@ impl CommsModule {
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LowHighCount {
-    pub low: u64,
-    pub high: u64,
+    pub low: usize,
+    pub high: usize,
 }
 
 impl Add for LowHighCount {
@@ -137,11 +138,26 @@ impl Sub for LowHighCount {
     }
 }
 
-impl Mul<u64> for LowHighCount {
+impl Mul<usize> for LowHighCount {
     type Output = LowHighCount;
 
-    fn mul(self, rhs: u64) -> Self::Output {
+    fn mul(self, rhs: usize) -> Self::Output {
         LowHighCount { low: self.low * rhs, high: self.high * rhs }
+    }
+}
+
+impl MulAssign<usize> for LowHighCount {
+    fn mul_assign(&mut self, rhs: usize) {
+        self.low *= rhs;
+        self.high *= rhs;
+    }
+}
+
+impl Mul<LowHighCount> for usize {
+    type Output = LowHighCount;
+
+    fn mul(self, rhs: LowHighCount) -> Self::Output {
+        LowHighCount { low: self * rhs.low, high: self * rhs.high }
     }
 }
 
@@ -232,46 +248,24 @@ impl CommsSystem {
         self.comms.iter().map(|c| c.state.clone()).collect_vec()
     }
 
-    pub fn run_part1(&mut self, button_pushes: u64) -> LowHighCount {
-        let mut cycle_end_lh = LowHighCount::default();
+    pub fn run_part1(&mut self, button_pushes: usize) -> LowHighCount {
+        let mut low_high = LowHighCount::default();
+        let it = iter::repeat(()).map(|_| {
+            let next = (self.state(), low_high);
+            low_high += self.push_button();
+            next
+        });
 
-        let mut states = HashMap::new();
-        states.insert(self.state(), (0, cycle_end_lh));
-        let (mut cycle_start, mut cycle_end) = (0, button_pushes);
-        let mut cycle_start_lh = LowHighCount::default();
-        for j in 0..button_pushes {
-            cycle_end_lh += self.push_button();
-            let state = self.state();
-            if let Some((i, lh)) = states.insert(state, (j, cycle_end_lh)) {
-                (cycle_start, cycle_end, cycle_start_lh) = (i, j, lh);
-                break;
+        match find_in_cycle(it, button_pushes) {
+            Ok(cycle) => {
+                let cycle_delta_low_high = cycle.end.1 - cycle.start.1;
+                cycle.target_equiv.1 + cycle_delta_low_high * cycle.complete_cycles()
             }
-        };
-
-        let cycle_len = cycle_end - cycle_start + 1;
-        let (cycles, post_cycle_inc_lh) = if cycle_len == 1 {
-            (button_pushes, LowHighCount::default())
-        } else {
-            let steps_in_cycle = button_pushes - cycle_start;
-            let cycles = steps_in_cycle / cycle_len;
-            let post_cycle = steps_in_cycle % cycle_len;
-            let post_cycle_inc_lh = if post_cycle == 0 {
-                LowHighCount::default()
-            } else {
-                states.values()
-                    .find(|(i, ..)| *i == cycle_start + post_cycle - 1)
-                    .map(|(_, lh)| *lh)
-                    .unwrap()
-                    - cycle_start_lh
-            };
-            (cycles, post_cycle_inc_lh)
-        };
-
-        let cycle_inc_lh = cycle_end_lh - cycle_start_lh;
-        cycle_inc_lh * cycles + cycle_start_lh + post_cycle_inc_lh
+            Err(no_cycle) => no_cycle.target.1,
+        }
     }
 
-    pub fn run_part2(&mut self) -> u64 {
+    pub fn run_part2(&mut self) -> usize {
         let rx = self.index["rx"];
         let rx_in = self.comms[rx].incoming.iter()
             .copied()
@@ -289,7 +283,7 @@ impl CommsSystem {
                 })
             })
             .take_while_inclusive(|&outcome| outcome == ControlFlow::Continue)
-            .count() as u64
+            .count()
         })
         .reduce(num::integer::lcm)
         .expect("No nodes to rx")

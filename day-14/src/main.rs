@@ -1,9 +1,10 @@
-use std::collections::HashMap;
 use std::fs::File;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::io::{BufReader, Read, Seek};
+use std::iter;
 
 use itertools::Itertools;
+use aoc::cycle::{Cycle, NoCycle, find_in_cycle};
 
 use aoc::grid::{Axis, read_grid_ascii, Way};
 
@@ -62,17 +63,16 @@ fn calc_load(grid: &Grid, way: Way) -> usize {
     }).sum()
 }
 
-pub fn hash<T: Hash>(value: &T) -> u64 {
+pub fn hash(value: &Grid) -> u64 {
     let mut h = DefaultHasher::new();
     value.hash(&mut h);
     h.finish()
 }
 
 fn spin(grid: &mut Grid) {
-    tilt(grid, Way::Up);
-    tilt(grid, Way::Left);
-    tilt(grid, Way::Down);
-    tilt(grid, Way::Right);
+    for way in [Way::Up, Way::Left, Way::Down, Way::Right] {
+        tilt(grid, way);
+    }
 }
 
 fn part1(mut grid: Grid) -> usize {
@@ -83,26 +83,15 @@ fn part1(mut grid: Grid) -> usize {
 fn part2(mut grid: Grid) -> usize {
     const SPINS: usize = 1_000_000_000;
 
-    let mut grids_seen: HashMap<_, (usize, usize)> = HashMap::new();
-    let (mut cycle_start, mut cycle_end) = (0, SPINS);
-    for j in 0..SPINS {
+    let grid_loads = iter::repeat(()).map(|_| {
         spin(&mut grid);
-        let h = hash(&grid);
-        let load = calc_load(&grid, Way::Up);
-        if let Some((i, _)) = grids_seen.insert(h, (j, load)) {
-            (cycle_start, cycle_end) = (i, j);
-            break;
-        }
+        (hash(&grid), calc_load(&grid, Way::Up))
+    });
+
+    match find_in_cycle(grid_loads, SPINS - 1) {
+        Ok(Cycle { target_equiv: (_ix, load), ..}) => load,
+        Err(NoCycle { target: (_ix, load), ..}) => load,
     }
-
-    let cycle_len = cycle_end - cycle_start;
-    let target_ix = ((SPINS - 1 - cycle_start) % cycle_len) + cycle_start;
-    eprintln!("Cycle at {cycle_start:?} -> {cycle_end:?}, need {target_ix:?}");
-
-    let &(_, load) = grids_seen.values()
-        .find(|(i, _load)| *i == target_ix)
-        .unwrap();
-    load
 }
 
 fn run<R: Read, F>(input: R, solve: F) -> Result<usize, aoc::Error>
