@@ -33,6 +33,7 @@ fn part2<R: Read>(input: R) -> Result<u16, aoc::error::Error> {
 fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-23");
     let mut f = File::open(path)?;
+
     // Answer: 2238
     let answer = part1(&f)?;
     println!("Part 1: {answer}");

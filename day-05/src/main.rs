@@ -8,7 +8,6 @@ fn follow_maps(seeds: &[Range], maps: &[SeedMap]) -> Vec<Range> {
     maps.iter().fold(ranges, |ranges, map: &SeedMap| map.get_many_ordered(&ranges))
 }
 
-// Answer: 324724204
 fn part1(seed_numbers: &[u64], maps: &[SeedMap]) -> u64 {
     let seeds: Vec<Range> = seed_numbers.iter()
         .map(|&seed| Range::from_start_len(seed, 1))
@@ -19,7 +18,6 @@ fn part1(seed_numbers: &[u64], maps: &[SeedMap]) -> u64 {
     sorted_result[0].start()
 }
 
-// Answer: 104070862
 fn part2(seed_numbers: &[u64], maps: &[SeedMap]) -> u64 {
     let seeds: Vec<Range> = seed_numbers.iter()
         .tuples::<(_, _)>()
@@ -33,10 +31,12 @@ fn part2(seed_numbers: &[u64], maps: &[SeedMap]) -> u64 {
 fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-05");
     let f = File::open(path)?;
-
     let (seeds, maps) = parse::read_seed_maps(&f)?;
+
+    // Answer: 324724204
     let answer = part1(&seeds, &maps);
     println!("Part 1: {}", answer);
+    // Answer: 104070862
     let answer = part2(&seeds, &maps);
     println!("Part 2: {}", answer);
 

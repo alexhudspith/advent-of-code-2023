@@ -60,13 +60,11 @@ fn parse_races(s: &str, squash_space: bool) -> Result<Vec<Race>, aoc::error::Err
     Ok(result)
 }
 
-// Answer: 211904
 fn part1(s: &str) -> Result<u64, aoc::error::Error> {
     let races = parse_races(s, false)?;
     Ok(races.into_iter().map(win_count).product())
 }
 
-// Answer: 43364472
 fn part2(s: &str) -> Result<u64, aoc::error::Error> {
     let races = parse_races(s, true)?;
     assert_eq!(races.len(), 1);
@@ -79,8 +77,10 @@ fn main() -> Result<(), aoc::error::Error> {
         Distance:   334   1135   1350   2430
     "};
 
+    // Answer: 211904
     let answer = part1(s)?;
     println!("Part 1: {answer}");
+    // Answer: 43364472
     let answer = part2(s)?;
     println!("Part 1: {answer}");
     Ok(())

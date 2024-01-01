@@ -19,7 +19,7 @@ pub fn run<F>(schematic: &Schematic, mut score: F) -> Result<u64, aoc::error::Er
     Ok(total)
 }
 
-// Answer: 536202
+
 pub fn part1_fn() -> impl FnMut(&Schematic, u64, ColSpan) -> u64 {
     |schematic, number, col_span| {
         find_in_frame(schematic, is_symbol, col_span)
@@ -28,7 +28,7 @@ pub fn part1_fn() -> impl FnMut(&Schematic, u64, ColSpan) -> u64 {
     }
 }
 
-// Answer: 78272573
+
 pub fn part2_fn() -> impl FnMut(&Schematic, u64, ColSpan) -> u64 {
     let mut numbers_by_gear_pos = HashMap::new();
 
@@ -48,10 +48,12 @@ pub fn part2_fn() -> impl FnMut(&Schematic, u64, ColSpan) -> u64 {
 fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-03");
     let f = File::open(path)?;
-
     let s = read_schematic(f)?;
+
+    // Answer: 536202
     let total = run(&s, part1_fn())?;
     println!("Part 1: {}", total);
+    // Answer: 78272573
     let total = run(&s, part2_fn())?;
     println!("Part 2: {}", total);
     Ok(())

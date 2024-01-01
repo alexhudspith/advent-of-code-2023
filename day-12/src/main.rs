@@ -87,12 +87,10 @@ fn parse_line(line: &str) -> Result<(&str, Vec<uint>), aoc::error::Error> {
     Ok((vents, groups))
 }
 
-// Answer: 7251
 fn part1<R: Read>(input: R) -> Result<uint, aoc::error::Error> {
     run(input, 1)
 }
 
-// Answer: 2128386729962
 fn part2<R: Read>(input: R) -> Result<uint, aoc::error::Error> {
     run(input, 5)
 }
@@ -101,9 +99,11 @@ fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-12");
     let mut f = File::open(path)?;
 
+    // Answer: 7251
     let answer = part1(&f)?;
     println!("Part 1: {answer}");
     f.rewind()?;
+    // Answer: 2128386729962
     let answer = part2(&f)?;
     println!("Part 2: {answer}");
     Ok(())

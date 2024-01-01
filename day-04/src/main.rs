@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io::{Read, Seek};
 use day_04::{Cards, read_cards};
 
-// Answer: 21105
 fn part1(cards: Cards) -> u64 {
     cards.iter()
         .filter(|card| card.win_count != 0)
@@ -10,7 +9,6 @@ fn part1(cards: Cards) -> u64 {
         .sum()
 }
 
-// Answer: 5329815
 fn part2(mut cards: Cards) -> u64 {
     (0..cards.len())
         .map(|i| {
@@ -33,9 +31,11 @@ fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-04");
     let mut f = File::open(path)?;
 
+    // Answer: 21105
     let total = run(&f, part1)?;
     println!("Part 1: {}", total);
     f.rewind()?;
+    // Answer: 5329815
     let total = run(&f, part2)?;
     println!("Part 2: {}", total);
 

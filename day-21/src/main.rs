@@ -139,6 +139,7 @@ fn run<R: Read, F>(input: R, solve: F) -> Result<usize, aoc::error::Error>
 fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-21");
     let mut f = File::open(path)?;
+
     // Answer: 3746
     let answer = run(&f, |g| part1(g, 64))?;
     println!("Part 1: {answer}");

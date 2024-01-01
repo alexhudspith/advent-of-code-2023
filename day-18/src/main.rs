@@ -88,7 +88,6 @@ fn run<R, F>(input: R, parse_line: F) -> Result<usize, aoc::error::Error>
     Ok(area)
 }
 
-// Answer: 61865
 fn part1<R: Read>(input: R) -> Result<usize, aoc::error::Error> {
     run(input, parse_line_part1)
 }

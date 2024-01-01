@@ -82,12 +82,10 @@ fn run(image: &Image, expansion_factor: usize) -> usize {
         .sum()
 }
 
-// Answer: 10422930
 fn part1(image: &Image) -> usize {
     run(image, 2)
 }
 
-// Answer: 699909023130
 fn part2(image: &Image) -> usize {
     run(image, 1_000_000)
 }
@@ -97,8 +95,10 @@ fn main() -> Result<(), aoc::error::Error> {
     let f = File::open(path)?;
     let image = read_image(f)?;
 
+    // Answer: 10422930
     let answer = part1(&image);
     println!("Part 1: {answer}");
+    // Answer: 699909023130
     let answer = part2(&image);
     println!("Part 2: {answer}");
     Ok(())

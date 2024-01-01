@@ -17,13 +17,11 @@ fn run<R, F>(input: R, mut game_score: F) -> Result<u64, aoc::error::Error>
     Ok(total)
 }
 
-// Answer: 2006
 fn part1(game: &Game) -> u64 {
     let cubes = Cubes { red: 12, green: 13, blue: 14 };
     if game.possible(cubes) { game.id } else { 0 }
 }
 
-// Answer: 84911
 fn part2(game: &Game) -> u64 {
     game.min_cubes().power()
 }
@@ -32,9 +30,11 @@ fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-02");
     let mut f = File::open(path)?;
 
+    // Answer: 2006
     let total = run(&f, part1)?;
     println!("Part 1: {total}");
     f.rewind()?;
+    // Answer: 84911
     let total = run(&f, part2)?;
     println!("Part 2: {total}");
 

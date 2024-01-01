@@ -13,12 +13,10 @@ fn run<R: Read>(input: R, use_jokers: bool) -> Result<u32, aoc::error::Error> {
     Ok(total)
 }
 
-// Answer: 248569531
 fn part1<R: Read>(input: R) -> Result<u32, aoc::error::Error> {
     run(input, false)
 }
 
-// Answer: 250382098
 fn part2<R: Read>(input: R) -> Result<u32, aoc::error::Error> {
     run(input, true)
 }
@@ -27,9 +25,11 @@ fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-07");
     let mut f = File::open(path)?;
 
+    // Answer: 248569531
     let answer = part1(&f)?;
     println!("Part 1: {answer}");
     f.rewind()?;
+    // Answer: 250382098
     let answer = part2(&f)?;
     println!("Part 2: {answer}");
 

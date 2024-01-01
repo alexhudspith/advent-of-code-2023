@@ -40,13 +40,11 @@ fn hops_to_z(graph: &Graph, start_node: Node) -> Vec<usize> {
         .collect_vec()
 }
 
-// Answer: 14681
 fn part1_fn() -> Result<impl FnMut(Node) -> bool, aoc::error::Error> {
     let aaa: Node = "AAA".parse()?;
     Ok(move |node: Node| node == aaa)
 }
 
-// Answer: 14321394058031
 fn part2_fn() -> Result<impl FnMut(Node) -> bool, aoc::error::Error> {
     Ok(|node: Node| node.ends_with(b'A'))
 }
@@ -55,9 +53,11 @@ fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-08");
     let mut f = File::open(path)?;
 
+    // Answer: 14681
     let answer = run(&mut f, part1_fn()?)?;
     println!("Part 1: {answer}");
     f.rewind()?;
+    // Answer: 14321394058031
     let answer = run(&mut f, part2_fn()?)?;
     println!("Part 2: {answer}");
 

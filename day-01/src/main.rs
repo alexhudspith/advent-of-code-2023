@@ -76,12 +76,10 @@ fn find_digit_words_fn() -> impl FnMut(&str) -> Option<(usize, usize)> {
     }
 }
 
-// Answer: 54450
 fn part1<R: Read>(input: R) -> Result<usize, aoc::error::Error> {
     run(input, find_digits)
 }
 
-// Answer: 54265
 fn part2<R: Read>(input: R) -> Result<usize, aoc::error::Error> {
     run(input, find_digit_words_fn())
 }
@@ -90,9 +88,11 @@ fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-01");
     let mut f = File::open(path)?;
 
+    // Answer: 54450
     let total = part1(&f)?;
     println!("Part 1: {total}");
     f.rewind()?;
+    // Answer: 54265
     let total = part2(&f)?;
     println!("Part 2: {total}");
 
