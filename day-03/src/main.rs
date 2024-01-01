@@ -5,7 +5,7 @@ use std::str;
 
 use day_03::{number_spans, maybe_gear, is_symbol, Schematic, ColSpan, find_in_frame, read_schematic};
 
-pub fn run<F>(schematic: &Schematic, mut score: F) -> Result<u64, aoc::Error>
+pub fn run<F>(schematic: &Schematic, mut score: F) -> Result<u64, aoc::error::Error>
     where F: FnMut(&Schematic, u64, ColSpan) -> u64
 {
     let mut total = 0;
@@ -45,7 +45,7 @@ pub fn part2_fn() -> impl FnMut(&Schematic, u64, ColSpan) -> u64 {
     }
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-03");
     let f = File::open(path)?;
 

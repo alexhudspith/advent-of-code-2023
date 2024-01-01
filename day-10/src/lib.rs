@@ -83,7 +83,7 @@ fn maze_fmt(maze: &Maze, f: &mut fmt::Formatter) -> fmt::Result {
     Ok(())
 }
 
-pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
+pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::error::Error> {
     let mut main_loop = Vec::new();
     let start = start(maze);
     let mut pos = start;
@@ -112,7 +112,7 @@ pub fn maze_pipe_loop(maze: &Maze) -> Result<Vec<(usize, usize)>, aoc::Error> {
     Ok(main_loop)
 }
 
-pub fn read_maze<R: Read>(input: R) -> Result<Maze, aoc::Error> {
+pub fn read_maze<R: Read>(input: R) -> Result<Maze, aoc::error::Error> {
     let mut reader = BufReader::new(input);
     read_grid_with_transform(
         &mut reader,

@@ -224,9 +224,9 @@ impl SubAssign<Vec3> for BoundingBox {
 }
 
 impl FromStr for BoundingBox {
-    type Err = aoc::Error;
+    type Err = aoc::error::Error;
 
-    fn from_str(s: &str) -> Result<Self, aoc::Error> {
+    fn from_str(s: &str) -> Result<Self, aoc::error::Error> {
         let [b0, b1] = s.splitn(2, '~')
             .try_collect_array()?;
         let bottom_left = parse_coord(b0)? - Vec3::new(0, 0, 1);
@@ -235,7 +235,7 @@ impl FromStr for BoundingBox {
     }
 }
 
-fn parse_coord(s: &str) -> Result<Vec3, aoc::Error> {
+fn parse_coord(s: &str) -> Result<Vec3, aoc::error::Error> {
     let coord_str: [_; 3] = s.splitn(3, ',')
         .try_collect_array()?;
 

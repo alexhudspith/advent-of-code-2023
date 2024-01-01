@@ -126,7 +126,7 @@ fn part2_real(grid: &Grid, max_dist: usize) -> usize {
     result as usize
 }
 
-fn run<R: Read, F>(input: R, solve: F) -> Result<usize, aoc::Error>
+fn run<R: Read, F>(input: R, solve: F) -> Result<usize, aoc::error::Error>
     where
         R: Read,
         F: FnOnce(&Grid) -> usize
@@ -136,7 +136,7 @@ fn run<R: Read, F>(input: R, solve: F) -> Result<usize, aoc::Error>
     Ok(solve(&grid))
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-21");
     let mut f = File::open(path)?;
     // Answer: 3746

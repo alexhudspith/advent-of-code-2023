@@ -41,7 +41,7 @@ fn cumulative_sum<I: IntoIterator<Item=usize>>(v: I) -> Vec<usize> {
     }).collect_vec()
 }
 
-fn read_image<R: Read>(reader: R) -> Result<Image, aoc::Error> {
+fn read_image<R: Read>(reader: R) -> Result<Image, aoc::error::Error> {
     let mut galaxies: Vec<(usize, usize)> = vec![];
     let mut col_count = 0;
     let mut row_count = 0;
@@ -92,7 +92,7 @@ fn part2(image: &Image) -> usize {
     run(image, 1_000_000)
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-11");
     let f = File::open(path)?;
     let image = read_image(f)?;

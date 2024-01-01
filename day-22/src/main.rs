@@ -3,7 +3,7 @@ use std::io::{Read, Seek};
 
 use day_22::read_bricks;
 
-fn part1<R: Read>(input: R) -> Result<u64, aoc::Error> {
+fn part1<R: Read>(input: R) -> Result<u64, aoc::error::Error> {
     let mut bricks = read_bricks(input)?;
     bricks.settle();
 
@@ -14,7 +14,7 @@ fn part1<R: Read>(input: R) -> Result<u64, aoc::Error> {
     Ok(total as u64)
 }
 
-fn part2<R: Read>(input: R) -> Result<u64, aoc::Error> {
+fn part2<R: Read>(input: R) -> Result<u64, aoc::error::Error> {
     let mut bricks = read_bricks(input)?;
     bricks.settle();
 
@@ -29,7 +29,7 @@ fn part2<R: Read>(input: R) -> Result<u64, aoc::Error> {
     Ok(total as u64)
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-22");
     let mut f = File::open(path)?;
     // Answer: 430

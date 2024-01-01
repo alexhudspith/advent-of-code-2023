@@ -30,7 +30,7 @@ fn part2(seed_numbers: &[u64], maps: &[SeedMap]) -> u64 {
     sorted_result[0].start()
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-05");
     let f = File::open(path)?;
 

@@ -52,7 +52,7 @@ pub fn find_in_frame<F>(grid: &Schematic, mut predicate: F, col_span: ColSpan) -
     frame(col_span).find(|&(r, c)| predicate(grid[r][c]))
 }
 
-pub fn read_schematic<R: Read>(input: R) -> Result<Schematic, aoc::Error> {
+pub fn read_schematic<R: Read>(input: R) -> Result<Schematic, aoc::error::Error> {
     let mut reader = BufReader::new(input);
     read_grid_ascii(&mut reader, Some(BLANK))
 }

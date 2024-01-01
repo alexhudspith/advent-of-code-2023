@@ -2,12 +2,12 @@ use std::io::{BufRead, BufReader, Read};
 
 use itertools::Itertools;
 
-use aoc::aoc_err;
+use aoc::error::aoc_err;
 use aoc::parse::{parse_spaced_vec, some_ok_or};
 
 use crate::{SeedMap, SeedMapEntry};
 
-fn parse_seed_entry(line: &str) -> Result<SeedMapEntry, aoc::Error> {
+fn parse_seed_entry(line: &str) -> Result<SeedMapEntry, aoc::error::Error> {
     if let &[dest, src, len] = parse_spaced_vec::<u64>(line)?.as_slice() {
         Ok(SeedMapEntry::new(src, dest, len))
     } else {
@@ -15,7 +15,7 @@ fn parse_seed_entry(line: &str) -> Result<SeedMapEntry, aoc::Error> {
     }
 }
 
-pub fn parse_seed_map(mut lines: impl Iterator<Item=String>) -> Result<SeedMap, aoc::Error> {
+pub fn parse_seed_map(mut lines: impl Iterator<Item=String>) -> Result<SeedMap, aoc::error::Error> {
     let line = lines.next().ok_or_else(|| aoc_err(""))?;
     let name = line.strip_suffix(" map:").ok_or_else(|| aoc_err(""))?.to_string();
 
@@ -27,7 +27,7 @@ pub fn parse_seed_map(mut lines: impl Iterator<Item=String>) -> Result<SeedMap, 
     Ok(SeedMap::new(name, entries))
 }
 
-pub fn read_seed_maps<R: Read>(input: R) -> Result<(Vec<u64>, Vec<SeedMap>), aoc::Error> {
+pub fn read_seed_maps<R: Read>(input: R) -> Result<(Vec<u64>, Vec<SeedMap>), aoc::error::Error> {
     let mut lines = BufReader::new(input).lines();
 
     let first = some_ok_or(lines.next(), "Empty file")?;

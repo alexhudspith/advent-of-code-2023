@@ -3,7 +3,7 @@ use std::io::{BufRead, BufReader, Read, Seek};
 
 use day_02::{Cubes, Game};
 
-fn run<R, F>(input: R, mut game_score: F) -> Result<u64, aoc::Error>
+fn run<R, F>(input: R, mut game_score: F) -> Result<u64, aoc::error::Error>
     where R: Read, F: FnMut(&Game) -> u64
 {
     let lines = BufReader::new(input).lines();
@@ -28,7 +28,7 @@ fn part2(game: &Game) -> u64 {
     game.min_cubes().power()
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-02");
     let mut f = File::open(path)?;
 

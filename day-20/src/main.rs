@@ -2,19 +2,19 @@ use std::fs::File;
 use std::io::{Read, Seek};
 use day_20::parse::read_system;
 
-fn part1<R: Read + Seek>(input: R) -> Result<usize, aoc::Error> {
+fn part1<R: Read + Seek>(input: R) -> Result<usize, aoc::error::Error> {
     let mut system = read_system(input)?;
     let low_high = system.run_part1(1000);
     Ok(low_high.low * low_high.high)
 }
 
-fn part2<R: Read + Seek>(input: R) -> Result<usize, aoc::Error> {
+fn part2<R: Read + Seek>(input: R) -> Result<usize, aoc::error::Error> {
     let mut system = read_system(input)?;
     let answer = system.run_part2();
     Ok(answer)
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-20");
     let mut f = File::open(path)?;
     // Answer: 777666211

@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 use itertools::Itertools;
 
-use crate::Error;
+use crate::error::Error;
 
 pub fn parse_spaced_vec<T>(line: &str) -> Result<Vec<T>, T::Err> where T: FromStr {
     parse_spaced(line)

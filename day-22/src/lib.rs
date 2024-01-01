@@ -161,7 +161,7 @@ fn group_by_z(bricks: &[Brick], top: bool) -> BTreeMap<u64, Vec<Brick>> {
         .collect()
 }
 
-pub fn read_bricks<R: Read>(input: R) -> Result<Bricks, aoc::Error> {
+pub fn read_bricks<R: Read>(input: R) -> Result<Bricks, aoc::error::Error> {
     let lines = BufReader::new(input).lines();
     let mut bricks = Bricks::new();
     for line in lines {

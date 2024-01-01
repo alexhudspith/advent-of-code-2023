@@ -4,118 +4,20 @@
 #![feature(new_uninit)]
 #![feature(step_trait)]
 
+use std::{env, fs};
+use std::cmp::Ordering;
+use std::convert::Infallible;
+use std::mem::MaybeUninit;
+use std::ops::{Add, AddAssign};
+use std::panic::panic_any;
+use std::path::PathBuf;
+use itertools::Itertools;
+
 pub mod cycle;
 pub mod grid;
 pub mod parse;
 pub mod range;
-
-use std::cmp::Ordering;
-use std::fmt::{Debug, Display, Formatter};
-use std::{env, fs, io};
-use std::convert::Infallible;
-use std::mem::MaybeUninit;
-use std::num::{ParseFloatError, ParseIntError};
-use std::ops::{Add, AddAssign};
-use std::panic::panic_any;
-use std::path::PathBuf;
-use std::str::Utf8Error;
-
-use itertools::Itertools;
-
-#[derive(Debug)]
-pub struct ParseDataError {
-    pub reason: String
-}
-
-#[derive(Debug)]
-pub enum Error {
-    IoError(io::Error),
-    ParseDataError(ParseDataError),
-    ParseIntError(ParseIntError),
-    ParseFloatError(ParseFloatError),
-    Utf8Error(Utf8Error),
-    // When not unexpected
-    EndOfFile,
-}
-
-impl Display for Error {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        <Self as Debug>::fmt(self, f)
-    }
-}
-
-impl std::error::Error for Error { }
-
-impl From<io::Error> for Error {
-    fn from(value: io::Error) -> Self {
-        Self::IoError(value)
-    }
-}
-
-impl From<ParseIntError> for Error {
-    fn from(value: ParseIntError) -> Self {
-        Self::ParseIntError(value)
-    }
-}
-
-impl From<ParseFloatError> for Error {
-    fn from(value: ParseFloatError) -> Self {
-        Self::ParseFloatError(value)
-    }
-}
-
-impl From<ParseDataError> for Error {
-    fn from(value: ParseDataError) -> Self {
-        Self::ParseDataError(value)
-    }
-}
-
-impl From<String> for Error {
-    fn from(value: String) -> Self {
-        Self::from(ParseDataError { reason: value })
-    }
-}
-
-impl From<&str> for Error {
-    fn from(value: &str) -> Self {
-        Self::from(value.to_owned())
-    }
-}
-
-impl From<Utf8Error> for Error {
-    fn from(value: Utf8Error) -> Self {
-        Self::Utf8Error(value)
-    }
-}
-
-impl From<u8> for Error {
-    fn from(value: u8) -> Self {
-        Self::ParseDataError(ParseDataError { reason: format!("{value}") })
-    }
-}
-
-impl From<Infallible> for Error {
-    fn from(_: Infallible) -> Self {
-        unreachable!()
-    }
-}
-
-pub fn infallible<F, T, R>(mut f: F) -> impl FnMut(T) -> Result<R, Infallible>
-    where F: FnMut(T) -> R
-{
-    move |t| Ok::<_, Infallible>(f(t))
-}
-
-#[cfg(feature = "nom")]
-impl From<nom::error::Error<String>> for Error {
-    fn from(value: nom::error::Error<String>) -> Self {
-        Self::ParseDataError(ParseDataError { reason: value.to_string() })
-    }
-}
-
-pub fn aoc_err<E>(value: E) -> Error where Error: From<E> {
-    Error::from(value)
-}
+pub mod error;
 
 fn find_dir(dirname: &str) -> PathBuf {
     let cwd = env::current_dir().expect("Can't get current directory");
@@ -142,6 +44,12 @@ pub fn find_path(filename: &str) -> PathBuf {
 
 pub fn find_input_path(day_dirname: &str) -> PathBuf {
     find_path(&format!("{day_dirname}.txt"))
+}
+
+pub fn infallible<F, T, R>(mut f: F) -> impl FnMut(T) -> Result<R, Infallible>
+    where F: FnMut(T) -> R
+{
+    move |t| Ok::<_, Infallible>(f(t))
 }
 
 #[inline]

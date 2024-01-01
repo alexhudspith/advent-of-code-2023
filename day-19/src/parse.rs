@@ -111,11 +111,11 @@ impl FromStr for Workflow {
     }
 }
 
-fn read_many<R, T>(input: R) -> Result<Vec<T>, aoc::Error>
+fn read_many<R, T>(input: R) -> Result<Vec<T>, aoc::error::Error>
     where
         R: BufRead,
         T: FromStr,
-        aoc::Error: From<T::Err>
+        aoc::error::Error: From<T::Err>
 {
     let mut values = Vec::new();
     for line in input.lines() {
@@ -130,10 +130,10 @@ fn read_many<R, T>(input: R) -> Result<Vec<T>, aoc::Error>
     Ok(values)
 }
 
-pub fn read_parts<R: BufRead>(input: R) -> Result<Vec<Part>, aoc::Error> {
+pub fn read_parts<R: BufRead>(input: R) -> Result<Vec<Part>, aoc::error::Error> {
     read_many(input)
 }
 
-pub fn read_system<R: BufRead>(input: R) -> Result<PartsSystem, aoc::Error> {
+pub fn read_system<R: BufRead>(input: R) -> Result<PartsSystem, aoc::error::Error> {
     read_many(input).map(PartsSystem::new)
 }

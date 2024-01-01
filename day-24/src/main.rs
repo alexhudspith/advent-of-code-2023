@@ -15,7 +15,7 @@ struct Motion {
     vel: Vec3,
 }
 
-fn parse_vec3(s: &str) -> Result<Vec3, aoc::Error> {
+fn parse_vec3(s: &str) -> Result<Vec3, aoc::error::Error> {
     let result = s.split(',')
         .map(str::trim)
         .map(f64::from_str)
@@ -24,7 +24,7 @@ fn parse_vec3(s: &str) -> Result<Vec3, aoc::Error> {
     Ok(result)
 }
 
-fn read_hailstones<R: Read>(input: R) -> Result<Vec<Motion>, aoc::Error> {
+fn read_hailstones<R: Read>(input: R) -> Result<Vec<Motion>, aoc::error::Error> {
     let lines = BufReader::new(input).lines();
     let mut result = Vec::new();
     for line in lines {
@@ -67,7 +67,7 @@ fn line_intersection(a: &Motion, b: &Motion) -> Option<Vec2> {
     (t > 0.0 && u > 0.0).then_some([px, py])
 }
 
-fn part1<R: Read>(input: R, min_pos: f64, max_pos: f64) -> Result<u64, aoc::Error> {
+fn part1<R: Read>(input: R, min_pos: f64, max_pos: f64) -> Result<u64, aoc::error::Error> {
     let hailstones = read_hailstones(input)?;
     let range = min_pos..=max_pos;
 
@@ -79,7 +79,7 @@ fn part1<R: Read>(input: R, min_pos: f64, max_pos: f64) -> Result<u64, aoc::Erro
     Ok(total as u64)
 }
 
-fn part2<R: Read>(input: R) -> Result<i64, aoc::Error> {
+fn part2<R: Read>(input: R) -> Result<i64, aoc::error::Error> {
     let hailstones = read_hailstones(input)?;
 
     let ctx = &z3::Context::new(&z3::Config::new());
@@ -127,7 +127,7 @@ fn part2<R: Read>(input: R) -> Result<i64, aoc::Error> {
     Ok(result.round() as i64)
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-24");
     let mut f = File::open(path)?;
     // Answer: 14799

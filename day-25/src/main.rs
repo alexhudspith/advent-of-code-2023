@@ -13,7 +13,7 @@ use aoc::parse::OkOrErr;
 
 type Graph = petgraph::Graph<u32, (), Undirected>;
 
-fn read_graph<R: Read>(input: R) -> Result<Graph, aoc::Error> {
+fn read_graph<R: Read>(input: R) -> Result<Graph, aoc::error::Error> {
     let lines = BufReader::new(input).lines();
     let mut graph = Graph::new_undirected();
     let mut nodes = HashMap::new();
@@ -75,7 +75,7 @@ fn contracted_graph(graph: &Graph) -> Graph {
     graph
 }
 
-fn part1<R: Read>(input: R) -> Result<u32, aoc::Error> {
+fn part1<R: Read>(input: R) -> Result<u32, aoc::error::Error> {
     let original_graph = read_graph(input)?;
 
     // https://en.wikipedia.org/wiki/Karger%27s_algorithm
@@ -89,7 +89,7 @@ fn part1<R: Read>(input: R) -> Result<u32, aoc::Error> {
     Ok(answer.0 * answer.1)
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-25");
     let f = File::open(path)?;
     // Answer: 601344

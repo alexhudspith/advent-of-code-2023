@@ -5,7 +5,7 @@ use aoc::range::Range;
 use day_19::{read_parts, read_system};
 pub use day_19::RangedPart;
 
-fn part1<R: Read>(input: R) -> Result<u64, aoc::Error> {
+fn part1<R: Read>(input: R) -> Result<u64, aoc::error::Error> {
     let mut input = BufReader::new(input);
     let system = read_system(&mut input)?;
     let parts = read_parts(&mut input)?;
@@ -14,7 +14,7 @@ fn part1<R: Read>(input: R) -> Result<u64, aoc::Error> {
     Ok(answer)
 }
 
-fn part2<R: Read>(input: R) -> Result<u64, aoc::Error> {
+fn part2<R: Read>(input: R) -> Result<u64, aoc::error::Error> {
     let mut input = BufReader::new(input);
     let system = read_system(&mut input)?;
     let part = RangedPart::all(Range::new(1, 4001));
@@ -23,7 +23,7 @@ fn part2<R: Read>(input: R) -> Result<u64, aoc::Error> {
     Ok(answer)
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-19");
     let mut f = File::open(path)?;
     // Answer: 383682

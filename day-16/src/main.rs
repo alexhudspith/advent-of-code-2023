@@ -140,7 +140,7 @@ fn part2(tiles: &Tiles) -> usize {
         .unwrap_or(0)
 }
 
-fn run<R: Read, F>(input: R, solve: F) -> Result<usize, aoc::Error>
+fn run<R: Read, F>(input: R, solve: F) -> Result<usize, aoc::error::Error>
     where
         F: FnOnce(&Tiles) -> usize
 {
@@ -149,7 +149,7 @@ fn run<R: Read, F>(input: R, solve: F) -> Result<usize, aoc::Error>
     Ok(solve(&tiles))
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-16");
     let mut f = File::open(path)?;
 

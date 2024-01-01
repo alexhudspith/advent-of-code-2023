@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read, Seek};
 use regex::{Match, Regex};
-use aoc::aoc_err;
+use aoc::error::aoc_err;
 
-fn run<R, F>(input: R, mut find_digits: F) -> Result<usize, aoc::Error>
+fn run<R, F>(input: R, mut find_digits: F) -> Result<usize, aoc::error::Error>
     where
         R: Read,
         F: FnMut(&str) -> Option<(usize, usize)>
@@ -77,16 +77,16 @@ fn find_digit_words_fn() -> impl FnMut(&str) -> Option<(usize, usize)> {
 }
 
 // Answer: 54450
-fn part1<R: Read>(input: R) -> Result<usize, aoc::Error> {
+fn part1<R: Read>(input: R) -> Result<usize, aoc::error::Error> {
     run(input, find_digits)
 }
 
 // Answer: 54265
-fn part2<R: Read>(input: R) -> Result<usize, aoc::Error> {
+fn part2<R: Read>(input: R) -> Result<usize, aoc::error::Error> {
     run(input, find_digit_words_fn())
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-01");
     let mut f = File::open(path)?;
 

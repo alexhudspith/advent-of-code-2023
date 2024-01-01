@@ -111,7 +111,7 @@ fn part2(grid: &mut Grid) -> usize {
     ) as usize
 }
 
-fn run<R: Read, F>(input: R, solve: F) -> Result<usize, aoc::Error>
+fn run<R: Read, F>(input: R, solve: F) -> Result<usize, aoc::error::Error>
     where
         F: FnOnce(&mut Grid) -> usize
 {
@@ -120,7 +120,7 @@ fn run<R: Read, F>(input: R, solve: F) -> Result<usize, aoc::Error>
     Ok(solve(&mut grid))
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-17");
     let mut f = File::open(path)?;
 

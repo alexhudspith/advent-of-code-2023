@@ -20,7 +20,7 @@ struct Command {
 }
 
 impl FromStr for Command {
-    type Err = aoc::Error;
+    type Err = aoc::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Some(label) = s.strip_suffix('-') {
@@ -40,12 +40,12 @@ fn focus_power(bucket_ix: usize, slot_ix: usize, focal_length: usize) -> usize {
     (bucket_ix + 1) * (slot_ix + 1) * focal_length
 }
 
-fn part1(input: &str) -> Result<usize, aoc::Error> {
+fn part1(input: &str) -> Result<usize, aoc::error::Error> {
     let total = input.split(',').map(|s| hash(s) as usize).sum();
     Ok(total)
 }
 
-fn part2(input: &str) -> Result<usize, aoc::Error> {
+fn part2(input: &str) -> Result<usize, aoc::error::Error> {
     let mut buckets = vec![vec![]; 256].into_boxed_slice();
 
     for s in input.split(',') {
@@ -78,7 +78,7 @@ fn part2(input: &str) -> Result<usize, aoc::Error> {
     Ok(total)
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-15");
     let mut f = File::open(path)?;
 

@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{Read, Seek};
 use day_07::*;
 
-fn run<R: Read>(input: R, use_jokers: bool) -> Result<u32, aoc::Error> {
+fn run<R: Read>(input: R, use_jokers: bool) -> Result<u32, aoc::error::Error> {
     let mut hand_bids = read_hand_bids(input, use_jokers)?;
     hand_bids.sort_by_key(|&(hand, _)| hand);
 
@@ -14,16 +14,16 @@ fn run<R: Read>(input: R, use_jokers: bool) -> Result<u32, aoc::Error> {
 }
 
 // Answer: 248569531
-fn part1<R: Read>(input: R) -> Result<u32, aoc::Error> {
+fn part1<R: Read>(input: R) -> Result<u32, aoc::error::Error> {
     run(input, false)
 }
 
 // Answer: 250382098
-fn part2<R: Read>(input: R) -> Result<u32, aoc::Error> {
+fn part2<R: Read>(input: R) -> Result<u32, aoc::error::Error> {
     run(input, true)
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-07");
     let mut f = File::open(path)?;
 

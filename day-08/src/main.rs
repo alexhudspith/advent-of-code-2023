@@ -2,10 +2,10 @@ use std::fs::File;
 use std::io::{Read, Seek};
 use itertools::Itertools;
 
-use aoc::{aoc_err};
+use aoc::error::aoc_err;
 use day_08::*;
 
-pub fn run<R, P>(input: R, mut is_start_node: P) -> Result<usize, aoc::Error>
+pub fn run<R, P>(input: R, mut is_start_node: P) -> Result<usize, aoc::error::Error>
     where
         R: Read,
         P: FnMut(Node) -> bool
@@ -41,17 +41,17 @@ fn hops_to_z(graph: &Graph, start_node: Node) -> Vec<usize> {
 }
 
 // Answer: 14681
-fn part1_fn() -> Result<impl FnMut(Node) -> bool, aoc::Error> {
+fn part1_fn() -> Result<impl FnMut(Node) -> bool, aoc::error::Error> {
     let aaa: Node = "AAA".parse()?;
     Ok(move |node: Node| node == aaa)
 }
 
 // Answer: 14321394058031
-fn part2_fn() -> Result<impl FnMut(Node) -> bool, aoc::Error> {
+fn part2_fn() -> Result<impl FnMut(Node) -> bool, aoc::error::Error> {
     Ok(|node: Node| node.ends_with(b'A'))
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-08");
     let mut f = File::open(path)?;
 

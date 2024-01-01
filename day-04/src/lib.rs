@@ -4,12 +4,12 @@ use std::str::FromStr;
 
 use itertools::Itertools;
 
-use aoc::aoc_err;
+use aoc::error::aoc_err;
 use aoc::parse::{parse_lines, parse_spaced};
 
 pub type Cards = Vec<Card>;
 
-pub fn read_cards<R: Read>(input: R) -> Result<Cards, aoc::Error> {
+pub fn read_cards<R: Read>(input: R) -> Result<Cards, aoc::error::Error> {
     BufReader::new(input).lines().process_results(|lines| parse_lines(lines))?
 }
 
@@ -19,7 +19,7 @@ pub struct Card {
 }
 
 impl FromStr for Card {
-    type Err = aoc::Error;
+    type Err = aoc::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (_, numbers) = s.split_once(':').ok_or(aoc_err("No colon"))?;

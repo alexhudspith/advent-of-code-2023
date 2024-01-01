@@ -56,7 +56,7 @@ fn solve(vents: &[u8], groups: &[uint], group_usage: uint, memo: &mut Memo) -> (
     (solutions, calc_count)
 }
 
-fn run<R: Read>(input: R, repeats: usize) -> Result<uint, aoc::Error> {
+fn run<R: Read>(input: R, repeats: usize) -> Result<uint, aoc::error::Error> {
     let mut total = 0;
     for line in BufReader::new(input).lines() {
         let line = line?;
@@ -78,7 +78,7 @@ fn run<R: Read>(input: R, repeats: usize) -> Result<uint, aoc::Error> {
     Ok(total)
 }
 
-fn parse_line(line: &str) -> Result<(&str, Vec<uint>), aoc::Error> {
+fn parse_line(line: &str) -> Result<(&str, Vec<uint>), aoc::error::Error> {
     let Some((vents, groups)) = line.split_ascii_whitespace().collect_tuple::<(_, _)>() else {
         return Err(format!("Bad line: {line}").into());
     };
@@ -88,16 +88,16 @@ fn parse_line(line: &str) -> Result<(&str, Vec<uint>), aoc::Error> {
 }
 
 // Answer: 7251
-fn part1<R: Read>(input: R) -> Result<uint, aoc::Error> {
+fn part1<R: Read>(input: R) -> Result<uint, aoc::error::Error> {
     run(input, 1)
 }
 
 // Answer: 2128386729962
-fn part2<R: Read>(input: R) -> Result<uint, aoc::Error> {
+fn part2<R: Read>(input: R) -> Result<uint, aoc::error::Error> {
     run(input, 5)
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-12");
     let mut f = File::open(path)?;
 

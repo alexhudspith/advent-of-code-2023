@@ -22,14 +22,14 @@ fn part2(mut cards: Cards) -> u64 {
         .sum()
 }
 
-fn run<R, F>(input: R, mut score: F) -> Result<u64, aoc::Error>
+fn run<R, F>(input: R, mut score: F) -> Result<u64, aoc::error::Error>
     where R: Read, F: FnMut(Cards) -> u64
 {
     let cards = read_cards(input)?;
     Ok(score(cards))
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-04");
     let mut f = File::open(path)?;
 

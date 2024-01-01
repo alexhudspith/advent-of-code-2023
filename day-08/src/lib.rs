@@ -5,7 +5,8 @@ use std::{iter, str};
 use std::ops::Index;
 use std::str::FromStr;
 use itertools::Itertools;
-use aoc::{aoc_err, CollectArray};
+use aoc::CollectArray;
+use aoc::error::aoc_err;
 use aoc::parse::some_ok_or;
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -122,7 +123,7 @@ impl Graph {
     }
 }
 
-fn parse_line(line: String) -> Result<(Node, (Node, Node)), aoc::Error> {
+fn parse_line(line: String) -> Result<(Node, (Node, Node)), aoc::error::Error> {
     let (source, _, left, right) = line
         .split_ascii_whitespace()
         .collect_tuple()
@@ -140,7 +141,7 @@ fn verify(edges: &HashMap<Node, (Node, Node)>) -> bool {
         )
 }
 
-pub fn read_graph<R: Read>(input: R) -> Result<Graph, aoc::Error> {
+pub fn read_graph<R: Read>(input: R) -> Result<Graph, aoc::error::Error> {
     let mut lines = BufReader::new(input).lines();
     let directions_line = some_ok_or(lines.next(), "No directions line")?;
     let directions = directions_line

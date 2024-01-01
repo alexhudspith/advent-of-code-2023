@@ -35,7 +35,7 @@ impl FromStr for CommsModule {
     }
 }
 
-pub fn read_system<R: Read + Seek>(input: R) -> Result<CommsSystem, aoc::Error> {
+pub fn read_system<R: Read + Seek>(input: R) -> Result<CommsSystem, aoc::error::Error> {
     let input = &mut BufReader::new(input);
     let mut system = CommsSystem::new();
 

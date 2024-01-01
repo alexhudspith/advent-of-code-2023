@@ -3,7 +3,7 @@ use std::num::ParseIntError;
 
 use indoc::indoc;
 use itertools::{Itertools, zip_eq};
-use aoc::aoc_err;
+use aoc::error::aoc_err;
 use aoc::parse::parse_spaced_vec;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -40,7 +40,7 @@ fn squashed(line: &str) -> Result<u64, ParseIntError> {
     line.chars().filter(|&c| !c.is_whitespace()).collect::<String>().parse()
 }
 
-fn parse_races(s: &str, squash_space: bool) -> Result<Vec<Race>, aoc::Error> {
+fn parse_races(s: &str, squash_space: bool) -> Result<Vec<Race>, aoc::error::Error> {
     let lines = s.split_terminator('\n')
         .filter(|line| !line.is_empty())
         .collect_vec();
@@ -61,19 +61,19 @@ fn parse_races(s: &str, squash_space: bool) -> Result<Vec<Race>, aoc::Error> {
 }
 
 // Answer: 211904
-fn part1(s: &str) -> Result<u64, aoc::Error> {
+fn part1(s: &str) -> Result<u64, aoc::error::Error> {
     let races = parse_races(s, false)?;
     Ok(races.into_iter().map(win_count).product())
 }
 
 // Answer: 43364472
-fn part2(s: &str) -> Result<u64, aoc::Error> {
+fn part2(s: &str) -> Result<u64, aoc::error::Error> {
     let races = parse_races(s, true)?;
     assert_eq!(races.len(), 1);
     Ok(win_count(races[0]))
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let s = indoc!{r"
         Time:        56     71     79     99
         Distance:   334   1135   1350   2430

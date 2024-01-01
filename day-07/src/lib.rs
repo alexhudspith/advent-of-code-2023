@@ -4,7 +4,8 @@ use std::io::{BufRead, BufReader, Read};
 use std::str;
 use std::str::FromStr;
 use itertools::Itertools;
-use aoc::{aoc_err, CollectArray};
+use aoc::error::aoc_err;
+use aoc::CollectArray;
 
 const CARDS: [char; 14] = ['*', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'];
 const JOKER_STR: &str = "*";
@@ -116,7 +117,7 @@ impl FromStr for Hand {
     }
 }
 
-fn parse_line(line: &str, use_jokers: bool) -> Result<(Hand, u32), aoc::Error> {
+fn parse_line(line: &str, use_jokers: bool) -> Result<(Hand, u32), aoc::error::Error> {
     let split = line.split_ascii_whitespace().collect_vec();
     let &[hand, bid] = split.as_slice() else {
         return Err(aoc_err("Bad line"));
@@ -132,7 +133,7 @@ fn parse_line(line: &str, use_jokers: bool) -> Result<(Hand, u32), aoc::Error> {
     Ok((hand, bid))
 }
 
-pub fn read_hand_bids<R: Read>(input: R, use_jokers: bool) -> Result<Vec<(Hand, u32)>, aoc::Error> {
+pub fn read_hand_bids<R: Read>(input: R, use_jokers: bool) -> Result<Vec<(Hand, u32)>, aoc::error::Error> {
     let lines = BufReader::new(input).lines();
     lines
         .process_results(|lines| {

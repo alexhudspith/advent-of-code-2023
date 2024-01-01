@@ -5,13 +5,13 @@ use aoc::grid::{Way, Ways};
 use day_10::{Maze, read_maze, ways_available, maze_pipe_loop};
 
 // Answer: 7107
-pub fn part1(maze: &Maze) -> Result<usize, aoc::Error> {
+pub fn part1(maze: &Maze) -> Result<usize, aoc::error::Error> {
     let distance = maze_pipe_loop(maze)?.len();
     Ok(distance.div_ceil(2))
 }
 
 // Answer: 281
-pub fn part2(maze: &Maze) -> Result<usize, aoc::Error>
+pub fn part2(maze: &Maze) -> Result<usize, aoc::error::Error>
 {
     let pipe_loop: HashSet<_> = maze_pipe_loop(maze)?.into_iter().collect();
 
@@ -38,7 +38,7 @@ pub fn part2(maze: &Maze) -> Result<usize, aoc::Error>
     Ok(count)
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-10");
     let f = File::open(path)?;
     let maze = read_maze(f)?;

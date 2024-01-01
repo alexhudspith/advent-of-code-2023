@@ -15,13 +15,13 @@ fn solve(grid: &Grid, axis: Axis, require_smudge: bool) -> Option<usize> {
     }).next()
 }
 
-fn run<R: Read>(input: R, require_smudge: bool) -> Result<usize, aoc::Error> {
+fn run<R: Read>(input: R, require_smudge: bool) -> Result<usize, aoc::error::Error> {
     let mut reader = BufReader::new(input);
     let mut total = 0;
     loop {
         let grid = match read_grid_ascii(&mut reader, None) {
             Ok(grid) => grid,
-            Err(aoc::Error::EndOfFile) => break,
+            Err(aoc::error::Error::EndOfFile) => break,
             Err(e) => return Err(e),
         };
 
@@ -57,7 +57,7 @@ fn diff_count<I: Iterator<Item=u8>>(line1: I, line2: I, max_diffs: usize) -> usi
         .count()
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-13");
     let mut f = File::open(path)?;
 

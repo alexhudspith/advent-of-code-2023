@@ -22,7 +22,7 @@ fn extrapolate(values: &[i64]) -> i64 {
     diagonal.into_iter().sum()
 }
 
-fn run<R: Read>(input: R, backwards: bool) -> Result<i64, aoc::Error> {
+fn run<R: Read>(input: R, backwards: bool) -> Result<i64, aoc::error::Error> {
     let lines = BufReader::new(input).lines();
     let mut total = 0;
     for line in lines {
@@ -37,7 +37,7 @@ fn run<R: Read>(input: R, backwards: bool) -> Result<i64, aoc::Error> {
     Ok(total)
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-09");
     let mut f = File::open(path)?;
 

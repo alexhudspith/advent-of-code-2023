@@ -13,7 +13,7 @@ pub fn end(grid: &Grid) -> Coords {
     (r as Ordinate, c as Ordinate)
 }
 
-fn part1<R: Read>(input: R) -> Result<u16, aoc::Error> {
+fn part1<R: Read>(input: R) -> Result<u16, aoc::error::Error> {
     let grid = read_grid(input)?;
     let (start, end) = (start(&grid), end(&grid));
     let answer = part1_longest_path(&grid, start, end);
@@ -21,7 +21,7 @@ fn part1<R: Read>(input: R) -> Result<u16, aoc::Error> {
     Ok(answer)
 }
 
-fn part2<R: Read>(input: R) -> Result<u16, aoc::Error> {
+fn part2<R: Read>(input: R) -> Result<u16, aoc::error::Error> {
     let grid = read_grid(input)?;
     let start = start(&grid);
     let end = end(&grid);
@@ -30,7 +30,7 @@ fn part2<R: Read>(input: R) -> Result<u16, aoc::Error> {
     Ok(answer)
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-23");
     let mut f = File::open(path)?;
     // Answer: 2238

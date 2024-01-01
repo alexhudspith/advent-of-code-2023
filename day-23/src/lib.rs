@@ -248,7 +248,7 @@ pub fn part2_longest_path(graph: &Graph, start: NodeIx, end: NodeIx) -> u16 {
         .expect("End node not reached")
 }
 
-pub fn read_grid<R: Read>(input: R) -> Result<Grid, aoc::Error> {
+pub fn read_grid<R: Read>(input: R) -> Result<Grid, aoc::error::Error> {
     let mut r = BufReader::new(input);
     aoc::grid::read_grid(&mut r, None)
 }

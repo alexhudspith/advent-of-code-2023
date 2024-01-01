@@ -3,7 +3,8 @@ use std::io::{BufRead, BufReader, Read, Seek};
 
 use itertools::Itertools;
 
-use aoc::{aoc_err, CollectArray};
+use aoc::CollectArray;
+use aoc::error::aoc_err;
 use aoc::grid::Way;
 
 type Position = (usize, usize);
@@ -18,7 +19,7 @@ fn from_hex(s: &str) -> Result<usize, String> {
     usize::from_str_radix(s, 16).map_err(|_| s.into())
 }
 
-fn parse_line_part1(line: &str) -> Result<Instruction, aoc::Error> {
+fn parse_line_part1(line: &str) -> Result<Instruction, aoc::error::Error> {
     let [way_str, count_str, _] = line.split_ascii_whitespace()
         .try_collect_array()
         .map_err(|_| aoc_err(format!("Bad line {line}")))?;
@@ -29,7 +30,7 @@ fn parse_line_part1(line: &str) -> Result<Instruction, aoc::Error> {
     Ok(Instruction { way, count })
 }
 
-fn parse_line_part2(line: &str) -> Result<Instruction, aoc::Error> {
+fn parse_line_part2(line: &str) -> Result<Instruction, aoc::error::Error> {
     let [_, _, colour_str] = line.split_ascii_whitespace()
         .try_collect_array()
         .map_err(|_| aoc_err(format!("Bad line {line}")))?;
@@ -52,10 +53,10 @@ fn parse_line_part2(line: &str) -> Result<Instruction, aoc::Error> {
 }
 
 
-fn parse_instructions<R, F>(input: R, mut parse_line: F) -> Result<Vec<Instruction>, aoc::Error>
+fn parse_instructions<R, F>(input: R, mut parse_line: F) -> Result<Vec<Instruction>, aoc::error::Error>
     where
         R: Read,
-        F: FnMut(&str) -> Result<Instruction, aoc::Error>
+        F: FnMut(&str) -> Result<Instruction, aoc::error::Error>
 {
     let lines = BufReader::new(input).lines();
     let mut table = vec![];
@@ -70,10 +71,10 @@ fn signed(pos: Position) -> (isize, isize) {
     (pos.0 as isize, pos.1 as isize)
 }
 
-fn run<R, F>(input: R, parse_line: F) -> Result<usize, aoc::Error>
+fn run<R, F>(input: R, parse_line: F) -> Result<usize, aoc::error::Error>
     where
         R: Read,
-        F: FnMut(&str) -> Result<Instruction, aoc::Error>
+        F: FnMut(&str) -> Result<Instruction, aoc::error::Error>
 {
     let table = parse_instructions(input, parse_line)?;
     let origin = (1 << 24, 1 << 24);
@@ -88,11 +89,11 @@ fn run<R, F>(input: R, parse_line: F) -> Result<usize, aoc::Error>
 }
 
 // Answer: 61865
-fn part1<R: Read>(input: R) -> Result<usize, aoc::Error> {
+fn part1<R: Read>(input: R) -> Result<usize, aoc::error::Error> {
     run(input, parse_line_part1)
 }
 
-fn part2<R: Read>(input: R) -> Result<usize, aoc::Error> {
+fn part2<R: Read>(input: R) -> Result<usize, aoc::error::Error> {
     run(input, parse_line_part2)
 }
 
@@ -121,7 +122,7 @@ fn perimeter(table: &[Instruction]) -> usize {
     p
 }
 
-fn main() -> Result<(), aoc::Error> {
+fn main() -> Result<(), aoc::error::Error> {
     let path = aoc::find_input_path("day-18");
     let mut f = File::open(path)?;
 
@@ -138,9 +139,11 @@ fn main() -> Result<(), aoc::Error> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::io::Cursor;
+
     use indoc::indoc;
+
+    use super::*;
 
     const EXAMPLE: &str = indoc!{r"
         R 6 (#70c710)

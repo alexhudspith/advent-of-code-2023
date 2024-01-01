@@ -13,8 +13,7 @@ use std::str::FromStr;
 use enumset::{EnumSet, EnumSetType};
 use itertools::Itertools;
 
-use crate as aoc;
-use aoc::infallible;
+use crate::infallible;
 
 #[derive(Debug, EnumSetType)]
 pub enum Axis {
@@ -319,17 +318,17 @@ fn display_fmt<T: Display>(grid: &Grid<T>, f: &mut Formatter) -> fmt::Result {
     Ok(())
 }
 
-pub fn read_grid_ascii<R>(reader: &mut R, padding: Option<u8>) -> Result<Grid<u8>, aoc::Error>
+pub fn read_grid_ascii<R>(reader: &mut R, padding: Option<u8>) -> Result<Grid<u8>, crate::error::Error>
     where R: BufRead
 {
     read_grid_with_transform(reader, padding, infallible(std::convert::identity), ascii_fmt)
 }
 
-pub fn read_grid<R, T>(reader: &mut R, padding: Option<T>) -> Result<Grid<T>, aoc::Error>
+pub fn read_grid<R, T>(reader: &mut R, padding: Option<T>) -> Result<Grid<T>, crate::error::Error>
     where
         R: BufRead,
         T: Display + Clone + TryFrom<u8> + 'static,
-        aoc::Error: From<T::Error>,
+        crate::error::Error: From<T::Error>,
 {
     read_grid_with_transform(reader, padding, T::try_from, display_fmt)
 }
@@ -340,12 +339,12 @@ pub fn read_grid_with_transform<R, T, E, F, D>(
     padding_value: Option<T>,
     mut transform: F,
     display: D
-) -> Result<Grid<T>, aoc::Error>
+) -> Result<Grid<T>, crate::error::Error>
     where
         R: BufRead,
         T: Clone,
         F: FnMut(u8) -> Result<T, E>,
-        aoc::Error: From<E>,
+        crate::error::Error: From<E>,
         D: 'static + Fn(&Grid<T>, &mut Formatter<'_>) -> fmt::Result,
 {
     let mut cells: Vec<T> = vec![];
@@ -386,7 +385,7 @@ pub fn read_grid_with_transform<R, T, E, F, D>(
     }
 
     if expected_col_count == 0 {
-        return Err(aoc::Error::EndOfFile);
+        return Err(crate::error::Error::EndOfFile);
     }
 
     if padding_value.is_some() {
