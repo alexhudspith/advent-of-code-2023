@@ -24,7 +24,7 @@ Solutions for [Advent of Code 2023][aoc], written in Rust.
 |  18 | Lavaduct Lagoon          | Calculate lagoon area from movement instructions    | Shoelace formula for polygon area, plus perimeter        |      1 ms |
 |  19 | Aplenty                  | Filter parts through interconnected workflows       | Model workflows with range intersection                  |      3 ms |
 |  20 | Pulse Propagation        | Calculate pulses sent after pushing a button        | Model system and find cycles in the state                |     20 ms |
-|  21 | Step Counter             | Count walks in an infinitely-repeating garden       | Fit a quadratic equation to specially-crafted input      |  1,662 ms |
+|  21 | Step Counter             | Count walks in an infinitely-repeating garden       | Fit a quadratic equation to specially-crafted input      |  1,100 ms |
 |  22 | Sand Slabs               | Determine falling bricks in a stack                 | Process bricks bottom-up tracking a 2D height map        |     40 ms |
 |  23 | A Long Walk              | Find longest walk in a grid (part 2 with cycles)    | Reduce to junction graph, exhaustive DFS with [PetGraph] |    810 ms |
 |  24 | Never Tell Me The Odds   | Calculate intersection of hailstone paths           | Solve system of quadratic equations with [Z3]            |     95 ms |

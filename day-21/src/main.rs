@@ -1,26 +1,25 @@
-use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufReader, Read, Seek};
 use std::iter;
+use fxhash::FxHashSet;
 
 use aoc::CollectArray;
-
-use aoc::grid::{read_grid_ascii, Ways};
+use aoc::grid::{read_grid_ascii, WayMap, Ways};
 
 type Grid = aoc::grid::Grid<u8>;
 
 type Ordinate = isize;
 type Coords = (Ordinate, Ordinate);
 
-fn signed((r, c): (usize, usize)) -> Coords {
+const fn signed((r, c): (usize, usize)) -> Coords {
     (r as Ordinate, c as Ordinate)
 }
 
-fn unsigned((r, c): Coords) -> (usize, usize) {
+const fn unsigned((r, c): Coords) -> (usize, usize) {
     (r as usize, c as usize)
 }
 
-fn wrapped(grid: &Grid, (r, c): Coords) -> (usize, usize) {
+const fn wrapped(grid: &Grid, (r, c): Coords) -> (usize, usize) {
     let (rows, cols) = signed(grid.shape());
     let r = r.rem_euclid(rows);
     let c = c.rem_euclid(cols);
@@ -63,7 +62,7 @@ fn bfs_level_size<'g, F, I>(grid: &'g Grid, start: Coords, neighbours: F) -> imp
         F: Fn(&'g Grid, Coords) -> I + 'g,
         I: Iterator<Item=Coords>
 {
-    let mut level_nodes = HashSet::new();
+    let mut level_nodes = FxHashSet::default();
     level_nodes.insert(start);
 
     iter::repeat(()).scan(level_nodes, move |next, _| {
@@ -110,15 +109,18 @@ fn part2_real(grid: &Grid, max_dist: usize) -> usize {
     let start = (grid_size_half, grid_size_half);
     assert_eq!(grid[start], b'S', "Start must be in the centre 🤷");
 
+    eprintln!("BFS...");
     let y = bfs_level_size(grid, signed(start), neighbours_part2)
         .enumerate()
         .filter(|&(i, _)| (i + 1) % grid_size == grid_size_half)
         .take(3)
         .map(|(_, d)| d as f64)
+        .inspect(|x| eprintln!("{}", x))
         .try_collect_array()
         .expect("Expected at least 3 levels");
 
     let n = ((max_dist - grid_size_half) / grid_size) as Ordinate;
+    eprintln!("Solving...");
     let a = quadratic_fit(y).map(|v| v as isize);
     let result = a[0] * n * n + a[1] * n + a[2];
 

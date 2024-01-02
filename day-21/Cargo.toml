@@ -9,6 +9,7 @@ repository.workspace = true
 
 [dependencies]
 aoc = { path = "../aoc" }
+fxhash = { workspace = true }
 itertools = { workspace = true, features = [] }
 
 [dev-dependencies]
